@@ -37,6 +37,14 @@
       focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
   }
 
+  /* במכשירי מגע כל כפתור מקבל אזור נגיעה של 44px לפחות, בלי לשנות את המראה בעכבר */
+  @media (pointer: coarse) {
+    .btn,
+    .chip {
+      @apply min-h-[2.75rem];
+    }
+  }
+
   .btn-primary {
     @apply btn bg-ink-800 text-parchment-50 hover:bg-ink-700 hover:shadow-pop;
   }

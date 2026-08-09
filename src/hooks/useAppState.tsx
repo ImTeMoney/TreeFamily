@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import type { CorpusFilter } from '../utils/people';
 
 const CORPUS_STORAGE_KEY = 'bible-map:corpus';
+const TOUR_STORAGE_KEY = 'bible-map:tour-seen';
 
 function readStoredCorpus(): CorpusFilter {
   if (typeof window === 'undefined') return 'all';
@@ -22,6 +23,10 @@ interface AppState {
   /** הקורפוס הפעיל — מסנן את כל האתר */
   corpus: CorpusFilter;
   setCorpus: (corpus: CorpusFilter) => void;
+  /** מסך הפתיחה — מוצג בכניסה הראשונה, וניתן לפתיחה חוזרת */
+  tourOpen: boolean;
+  openTour: () => void;
+  closeTour: () => void;
 }
 
 const AppStateContext = createContext<AppState | null>(null);
@@ -32,9 +37,19 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [corpus, setCorpus] = useState<CorpusFilter>(readStoredCorpus);
 
+  const [tourOpen, setTourOpen] = useState(
+    () => typeof window !== 'undefined' && !window.localStorage.getItem(TOUR_STORAGE_KEY),
+  );
+
   useEffect(() => {
     window.localStorage.setItem(CORPUS_STORAGE_KEY, corpus);
   }, [corpus]);
+
+  const openTour = useCallback(() => setTourOpen(true), []);
+  const closeTour = useCallback(() => {
+    window.localStorage.setItem(TOUR_STORAGE_KEY, '1');
+    setTourOpen(false);
+  }, []);
 
   const openPerson = useCallback((id: string) => {
     setActivePersonId((current) => {
@@ -60,8 +75,21 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ activePersonId, history, openPerson, closePerson, goBack, searchOpen, setSearchOpen, corpus, setCorpus }),
-    [activePersonId, history, openPerson, closePerson, goBack, searchOpen, corpus],
+    () => ({
+      activePersonId,
+      history,
+      openPerson,
+      closePerson,
+      goBack,
+      searchOpen,
+      setSearchOpen,
+      corpus,
+      setCorpus,
+      tourOpen,
+      openTour,
+      closeTour,
+    }),
+    [activePersonId, history, openPerson, closePerson, goBack, searchOpen, corpus, tourOpen, openTour, closeTour],
   );
 
   return <AppStateContext.Provider value={value}>{children}</AppStateContext.Provider>;

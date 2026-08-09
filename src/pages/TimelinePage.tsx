@@ -3,12 +3,12 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { dataset } from '../data/repository';
 import { Timeline } from '../components/Timeline';
 import { applyFilters, emptyFilters, FilterBar, type TimelineFilters } from '../components/FilterBar';
-import { CertaintyBadge } from '../components/CertaintyBadge';
+import { HelpPopover } from '../components/HelpPopover';
 import { useAppState } from '../hooks/useAppState';
 import { filterByCorpus } from '../utils/people';
 
 export function TimelinePage() {
-  const { corpus } = useAppState();
+  const { corpus, openTour } = useAppState();
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
   const focusPeriodId = params.get('period');
@@ -30,14 +30,10 @@ export function TimelinePage() {
         <div>
           <h1 className="section-title">ציר הזמן</h1>
           <p className="text-sm text-ink-600">
-            כל דמות מיוצגת ברצועה לאורך התקופה שבה חיה. ריחוף מציג פרטים, לחיצה פותחת את כרטיס הדמות.
+            כל רצועה היא אדם, ואורכה מייצג את התקופה שבה חי. רצועות חופפות = אנשים שחיו יחד.
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <CertaintyBadge certainty="certain" />
-          <CertaintyBadge certainty="estimated" />
-          <CertaintyBadge certainty="unknown" />
-        </div>
+        <HelpPopover onOpenTour={openTour} />
       </header>
 
       {highlightPersonId && dataset.peopleById.get(highlightPersonId) && (

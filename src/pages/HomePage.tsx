@@ -75,6 +75,41 @@ export function HomePage() {
       </section>
 
       <section>
+        <h2 className="section-title mb-3">איך זה עובד</h2>
+        <ol className="grid gap-3 sm:grid-cols-3">
+          {[
+            {
+              title: 'בוחרים דמות',
+              body: 'מהציר, מרשימת הדמויות או מהחיפוש. נפתח כרטיס עם התפקידים, המשפחה והמקורות בכתוב.',
+              action: { label: 'לציר הזמן', to: '/timeline' },
+            },
+            {
+              title: 'רואים מי חי איתה',
+              body: 'כפתור "מי חי בתקופתו?" מציג את כל בני התקופה, עם סינון למלכים, נביאים, כהנים, נשים ועוד.',
+              action: { label: 'לרשימת הדמויות', to: '/people' },
+            },
+            {
+              title: 'ממשיכים לקשרים',
+              body: 'מכל דמות אפשר לעבור לעץ המשפחה, לשרשרת הרב והתלמיד, לתקופה שלה ולאירועים שהשתתפה בהם.',
+              action: { label: 'לעצי המשפחה', to: '/families' },
+            },
+          ].map((step, index) => (
+            <li key={step.title} className="card flex h-full flex-col gap-2 p-5">
+              <span className="grid h-8 w-8 place-items-center rounded-full bg-ink-800 font-display text-sm font-bold text-parchment-50">
+                {index + 1}
+              </span>
+              <h3 className="font-display text-lg font-bold text-ink-900">{step.title}</h3>
+              <p className="flex-1 text-sm leading-relaxed text-ink-600">{step.body}</p>
+              <Link to={step.action.to} className="btn-ghost w-fit px-0 text-sm text-ink-700 hover:bg-transparent hover:text-gold-600">
+                {step.action.label}
+                <ArrowLeft className="h-4 w-4" />
+              </Link>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section>
         <div className="mb-3 flex items-end justify-between gap-3">
           <div>
             <h2 className="section-title">הצצה לציר הזמן</h2>

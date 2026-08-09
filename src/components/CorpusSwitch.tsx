@@ -35,6 +35,7 @@ export function CorpusSwitch({ className }: { className?: string }) {
           onClick={() => setCorpus(option.id)}
           className={cn(
             'shrink-0 whitespace-nowrap rounded-full px-3 py-1 text-xs font-medium transition-colors',
+            'coarse:min-h-[2.5rem] coarse:px-4',
             corpus === option.id ? 'bg-ink-800 text-parchment-50' : 'text-ink-600 hover:bg-parchment-100',
           )}
         >

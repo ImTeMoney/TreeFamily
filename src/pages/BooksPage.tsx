@@ -8,6 +8,7 @@ import { Timeline } from '../components/Timeline';
 import type { Corpus } from '../types';
 import { useAppState } from '../hooks/useAppState';
 import { corpusDescriptions, corpusLabels } from '../utils/labels';
+import { ReportButton } from '../components/ReportButton';
 
 const corpora: Corpus[] = ['tanach', 'bayit-sheni', 'mishna', 'talmud'];
 
@@ -83,10 +84,13 @@ export function BookDetailPage() {
 
   return (
     <div className="space-y-6">
-      <button type="button" onClick={() => navigate('/books')} className="btn-ghost text-sm">
-        <ArrowRight className="h-4 w-4" />
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <button type="button" onClick={() => navigate('/books')} className="btn-ghost text-sm">
+          <ArrowRight className="h-4 w-4" />
         לספרייה
-      </button>
+        </button>
+        <ReportButton targetType="book" targetId={book.id} targetName={book.name} variant="button" />
+      </div>
 
       <header className="card p-6">
         <span className="chip">

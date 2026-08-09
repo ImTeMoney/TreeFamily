@@ -6,6 +6,7 @@ import { FamilyTree, treeModeLabels, type TreeMode } from '../components/FamilyT
 import { studyRelations } from '../utils/people';
 import { PersonCard } from '../components/PersonCard';
 import { SourceList } from '../components/SourceList';
+import { ReportButton } from '../components/ReportButton';
 
 export function FamiliesPage() {
   return (
@@ -71,10 +72,13 @@ export function FamilyDetailPage() {
 
   return (
     <div className="space-y-6">
-      <button type="button" onClick={() => navigate('/families')} className="btn-ghost text-sm">
-        <ArrowRight className="h-4 w-4" />
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <button type="button" onClick={() => navigate('/families')} className="btn-ghost text-sm">
+          <ArrowRight className="h-4 w-4" />
         כל המשפחות
-      </button>
+        </button>
+        <ReportButton targetType="family" targetId={family.id} targetName={family.name} variant="button" />
+      </div>
 
       <header className="card p-6">
         <h1 className="font-display text-3xl font-bold text-ink-900">{family.name}</h1>

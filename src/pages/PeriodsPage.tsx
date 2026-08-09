@@ -9,6 +9,7 @@ import { matchesRoleGroup } from '../utils/people';
 import { SourceList } from '../components/SourceList';
 import { filterByCorpus } from '../utils/people';
 import { useAppState } from '../hooks/useAppState';
+import { ReportButton } from '../components/ReportButton';
 
 export function PeriodsPage() {
   const { corpus } = useAppState();
@@ -70,10 +71,13 @@ export function PeriodDetailPage() {
 
   return (
     <div className="space-y-6">
-      <button type="button" onClick={() => navigate('/periods')} className="btn-ghost text-sm">
-        <ArrowRight className="h-4 w-4" />
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <button type="button" onClick={() => navigate('/periods')} className="btn-ghost text-sm">
+          <ArrowRight className="h-4 w-4" />
         כל התקופות
-      </button>
+        </button>
+        <ReportButton targetType="period" targetId={period.id} targetName={period.name} variant="button" />
+      </div>
 
       <header className="card p-6">
         <div className="flex flex-wrap items-center gap-2">

@@ -1,10 +1,12 @@
-import { Filter, X } from 'lucide-react';
+import { useState } from 'react';
+import { ChevronDown, Filter, X } from 'lucide-react';
 import type { Gender, RoleTag } from '../types';
 import { dataset } from '../data/repository';
 import { roleLabels } from '../utils/labels';
 import { sectionLabels } from '../data/books';
 import { filterByCorpus } from '../utils/people';
 import { useAppState } from '../hooks/useAppState';
+import { useIsCompact } from '../hooks/useMediaQuery';
 import { cn } from '../utils/cn';
 
 export interface TimelineFilters {
@@ -82,6 +84,8 @@ function Select<T extends string>({
 
 export function FilterBar({ value, onChange, className }: Props) {
   const { corpus } = useAppState();
+  const isCompact = useIsCompact();
+  const [open, setOpen] = useState(false);
   const periodOptions = filterByCorpus(dataset.periods, corpus);
   const bookOptions = filterByCorpus(dataset.books, corpus);
   /** המדורים הרלוונטיים לקורפוס הפעיל; ב"הכול" מוצגים כל המדורים לפי סדרם */
@@ -101,16 +105,8 @@ export function FilterBar({ value, onChange, className }: Props) {
     (value.onlyCertain ? 1 : 0) +
     (value.includeEstimated ? 0 : 1);
 
-  return (
-    <div className={cn('card flex flex-wrap items-end gap-3 p-4', className)}>
-      <div className="flex items-center gap-1.5 pb-1 text-sm font-semibold text-ink-800">
-        <Filter className="h-4 w-4 text-gold-600" aria-hidden />
-        סינון
-        {activeCount > 0 && (
-          <span className="rounded-full bg-ink-800 px-1.5 text-[11px] text-parchment-50">{activeCount}</span>
-        )}
-      </div>
-
+  const fields = (
+    <>
       <Select
         label="תקופה"
         value={value.periodId}
@@ -179,10 +175,63 @@ export function FilterBar({ value, onChange, className }: Props) {
       </div>
 
       {activeCount > 0 && (
-        <button type="button" onClick={() => onChange(emptyFilters)} className="btn-ghost mr-auto text-xs">
+        <button type="button" onClick={() => onChange(emptyFilters)} className="btn-ghost text-xs lg:mr-auto">
           <X className="h-3.5 w-3.5" />
-          ניקוי
+          ניקוי הסינון
         </button>
+      )}
+    </>
+  );
+
+  return (
+    <div className={className}>
+      {/* הסינון מקופל כברירת מחדל — כפתור אחד במקום שבעה תפריטים פתוחים */}
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        className={cn('btn-secondary w-full justify-between sm:w-auto sm:justify-start', open && 'border-gold-500')}
+      >
+        <span className="flex items-center gap-1.5">
+          <Filter className="h-4 w-4 text-gold-600" aria-hidden />
+          סינון
+          {activeCount > 0 && (
+            <span className="rounded-full bg-ink-800 px-1.5 text-[11px] text-parchment-50">{activeCount}</span>
+          )}
+        </span>
+        <ChevronDown className={cn('h-4 w-4 transition-transform', open && 'rotate-180')} aria-hidden />
+      </button>
+
+      {/* במסך רחב נפתח במקום, במסך צר כמגירה תחתונה */}
+      {open && !isCompact && (
+        <div className="card mt-3 flex flex-wrap items-end gap-3 p-4 animate-fade-in">{fields}</div>
+      )}
+
+      {open && isCompact && (
+        <>
+          <div
+            className="fixed inset-0 z-40 bg-ink-900/30 backdrop-blur-[2px] animate-fade-in"
+            onClick={() => setOpen(false)}
+            aria-hidden
+          />
+          <div
+            role="dialog"
+            aria-label="סינון"
+            className="fixed inset-x-0 bottom-0 z-50 max-h-[80vh] overflow-y-auto rounded-t-3xl bg-parchment-50 p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] shadow-pop animate-slide-up"
+          >
+            <div className="mx-auto mb-3 h-1.5 w-12 rounded-full bg-parchment-300" aria-hidden />
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="font-display text-lg font-bold text-ink-900">סינון</h2>
+              <button type="button" onClick={() => setOpen(false)} className="btn-ghost px-2 py-1" aria-label="סגירה">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-3">{fields}</div>
+            <button type="button" onClick={() => setOpen(false)} className="btn-primary mt-5 w-full">
+              הצגת התוצאות
+            </button>
+          </div>
+        </>
       )}
     </div>
   );

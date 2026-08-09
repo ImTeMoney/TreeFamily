@@ -14,6 +14,8 @@ import {
 import { SearchBar } from '../components/SearchBar';
 import { PersonDrawer } from '../components/PersonDrawer';
 import { CorpusSwitch } from '../components/CorpusSwitch';
+import { Onboarding } from '../components/Onboarding';
+import { useAppState } from '../hooks/useAppState';
 import { cn } from '../utils/cn';
 
 const navItems = [
@@ -30,6 +32,7 @@ const mobileNav = navItems.filter((item) => ['/', '/timeline', '/people', '/peri
 
 export function AppLayout() {
   const { pathname } = useLocation();
+  const { tourOpen, closeTour } = useAppState();
 
   useEffect(() => {
     window.scrollTo({ top: 0 });
@@ -37,44 +40,33 @@ export function AppLayout() {
 
   return (
     <div className="min-h-full">
-      <header className="sticky top-0 z-30 border-b border-parchment-200 bg-parchment-50/85 backdrop-blur-md">
-        <div className="mx-auto flex max-w-[110rem] items-center gap-4 px-4 py-3 lg:px-6">
-          <Link to="/" className="group flex items-center gap-3">
-            <span className="grid h-10 w-10 place-items-center rounded-xl bg-ink-800 text-parchment-50 shadow-card transition-transform group-hover:scale-105">
-              <ScrollText className="h-5 w-5" aria-hidden />
+      <header className="sticky top-0 z-30 border-b border-parchment-200 bg-parchment-50/90 pt-[env(safe-area-inset-top)] backdrop-blur-md">
+        <div className="mx-auto flex max-w-[110rem] items-center gap-3 px-4 py-2.5 lg:gap-4 lg:px-6 lg:py-3">
+          <Link to="/" className="group flex min-w-0 items-center gap-2.5 coarse:min-h-[2.75rem]">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-ink-800 text-parchment-50 shadow-card transition-transform group-hover:scale-105 lg:h-10 lg:w-10">
+              <ScrollText className="h-4.5 w-4.5 lg:h-5 lg:w-5" aria-hidden />
             </span>
-            <span className="leading-tight">
-              <span className="block font-display text-lg font-bold text-ink-900">מפת המקורות</span>
-              <span className="block text-[11px] text-ink-400">מי חי בתקופה של מי?</span>
+            <span className="min-w-0 leading-tight">
+              <span className="block truncate font-display text-base font-bold text-ink-900 lg:text-lg">
+                מפת המקורות
+              </span>
+              <span className="block truncate text-[11px] text-ink-400">מי חי בתקופה של מי?</span>
             </span>
           </Link>
 
-          <CorpusSwitch className="hidden sm:flex" />
+          <CorpusSwitch className="hidden md:flex" />
 
           <div className="mr-auto flex flex-1 items-center justify-end gap-2">
-            <SearchBar className="hidden w-full max-w-sm md:block" />
-            <nav className="hidden items-center gap-1 lg:flex">
-              {[
-                { to: '/periods', label: 'תקופות' },
-                { to: '/people', label: 'דמויות' },
-                { to: '/families', label: 'משפחות' },
-                { to: '/events', label: 'אירועים' },
-              ].map((item) => (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  className={({ isActive }) =>
-                    cn('btn-ghost text-sm', isActive && 'bg-parchment-100 text-ink-900')
-                  }
-                >
-                  {item.label}
-                </NavLink>
-              ))}
-            </nav>
-            <Link to="/search" className="btn-secondary md:hidden" aria-label="חיפוש">
+            <SearchBar className="hidden w-full max-w-sm lg:block" />
+            <Link to="/search" className="btn-secondary lg:hidden" aria-label="חיפוש">
               <Search className="h-4 w-4" />
             </Link>
           </div>
+        </div>
+
+        {/* במסך צר מתג הקורפוס יורד לשורה נפרדת ונגלל, כדי שהכותרת לא תידחס */}
+        <div className="border-t border-parchment-200/70 px-4 py-1.5 md:hidden">
+          <CorpusSwitch />
         </div>
       </header>
 
@@ -106,13 +98,12 @@ export function AppLayout() {
           </p>
         </aside>
 
-        <main className="min-w-0 flex-1 pb-24 lg:pb-6">
-          <CorpusSwitch className="mb-4 w-fit sm:hidden" />
+        <main className="min-w-0 flex-1 pb-28 lg:pb-6">
           <Outlet />
         </main>
       </div>
 
-      <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-parchment-200 bg-parchment-50/95 backdrop-blur-md lg:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-parchment-200 bg-parchment-50/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md lg:hidden">
         <ul className="flex">
           {mobileNav.map(({ to, label, icon: Icon, end }) => (
             <li key={to} className="flex-1">
@@ -121,7 +112,7 @@ export function AppLayout() {
                 end={end}
                 className={({ isActive }) =>
                   cn(
-                    'flex flex-col items-center gap-0.5 py-2 text-[11px] font-medium transition-colors',
+                    'flex min-h-[3.25rem] flex-col items-center justify-center gap-0.5 py-2 text-[11px] font-medium transition-colors',
                     isActive ? 'text-ink-900' : 'text-ink-400',
                   )
                 }
@@ -135,6 +126,7 @@ export function AppLayout() {
       </nav>
 
       <PersonDrawer />
+      {tourOpen && <Onboarding onClose={closeTour} />}
     </div>
   );
 }

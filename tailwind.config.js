@@ -3,6 +3,10 @@ export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
     extend: {
+      screens: {
+        /** מכשירי מגע — לשימוש בהגדלת אזורי הנגיעה */
+        coarse: { raw: '(pointer: coarse)' },
+      },
       fontFamily: {
         sans: ['"Assistant"', '"Heebo"', 'system-ui', 'sans-serif'],
         display: ['"Frank Ruhl Libre"', 'Georgia', 'serif'],

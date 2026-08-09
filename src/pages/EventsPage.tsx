@@ -6,6 +6,7 @@ import { SourceList } from '../components/SourceList';
 import { PersonCard } from '../components/PersonCard';
 import { contemporariesOf, peopleInEvent } from '../utils/people';
 import { useAppState } from '../hooks/useAppState';
+import { ReportButton } from '../components/ReportButton';
 
 export function EventsPage() {
   const { corpus } = useAppState();
@@ -73,10 +74,13 @@ export function EventDetailPage() {
 
   return (
     <div className="space-y-6">
-      <button type="button" onClick={() => navigate('/events')} className="btn-ghost text-sm">
-        <ArrowRight className="h-4 w-4" />
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <button type="button" onClick={() => navigate('/events')} className="btn-ghost text-sm">
+          <ArrowRight className="h-4 w-4" />
         כל האירועים
-      </button>
+        </button>
+        <ReportButton targetType="event" targetId={event.id} targetName={event.name} variant="button" />
+      </div>
 
       <header className="card p-6">
         <div className="flex flex-wrap items-center gap-2">

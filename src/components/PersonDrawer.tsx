@@ -10,6 +10,7 @@ import { cn } from '../utils/cn';
 import { CertaintyBadge } from './CertaintyBadge';
 import { SourceList } from './SourceList';
 import { ContemporariesList } from './ContemporariesList';
+import { ReportButton } from './ReportButton';
 
 type Tab = 'details' | 'contemporaries' | 'family';
 
@@ -61,8 +62,8 @@ export function PersonDrawer() {
         className={cn(
           'fixed z-50 flex flex-col bg-parchment-50 shadow-pop',
           isMobile
-            ? 'inset-x-0 bottom-0 max-h-[88vh] rounded-t-3xl animate-slide-up'
-            : 'inset-y-0 left-0 w-full max-w-md animate-slide-in-right border-l border-parchment-200',
+            ? 'inset-x-0 bottom-0 max-h-[88vh] rounded-t-3xl pb-[env(safe-area-inset-bottom)] animate-slide-up'
+            : 'inset-y-0 left-0 w-full max-w-md animate-slide-in-right border-l border-parchment-200 pt-[env(safe-area-inset-top)]',
         )}
       >
         {isMobile && <div className="mx-auto mt-2 h-1.5 w-12 rounded-full bg-parchment-300" aria-hidden />}
@@ -85,6 +86,7 @@ export function PersonDrawer() {
             )}
             {person.disambiguation && <p className="mt-0.5 text-xs text-gold-600">{person.disambiguation}</p>}
           </div>
+          <ReportButton targetType="person" targetId={person.id} targetName={displayName(person)} />
           <button type="button" onClick={closePerson} className="btn-ghost px-2 py-1" aria-label="סגירה">
             <X className="h-4 w-4" />
           </button>

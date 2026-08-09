@@ -3,7 +3,7 @@ import { Crosshair, Maximize2, Minus, Plus, RotateCcw } from 'lucide-react';
 import type { Period, PeriodTrack, Person } from '../types';
 import { dataset } from '../data/repository';
 import { useAppState } from '../hooks/useAppState';
-import { useIsMobile } from '../hooks/useMediaQuery';
+import { useIsCompact } from '../hooks/useMediaQuery';
 import { byTimeline, filterByCorpus, type CorpusFilter } from '../utils/people';
 import { AXIS_MAX, AXIS_MIN, toPercent } from '../utils/axis';
 import { cn } from '../utils/cn';
@@ -81,7 +81,7 @@ const trackLabels: Record<PeriodTrack, string> = {
 };
 
 export function Timeline({ people, focusPeriodId, highlightPersonId, onSelectPeriod, className }: Props) {
-  const isMobile = useIsMobile();
+  const isCompact = useIsCompact();
   const { openPerson, corpus } = useAppState();
 
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -144,7 +144,7 @@ export function Timeline({ people, focusPeriodId, highlightPersonId, onSelectPer
     return () => window.clearTimeout(timer);
   }, [highlightPersonId]);
 
-  if (isMobile) {
+  if (isCompact) {
     return (
       <VerticalTimeline people={people} focusPeriodId={focusPeriodId} corpus={corpus} className={className} />
     );

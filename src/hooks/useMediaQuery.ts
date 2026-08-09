@@ -20,3 +20,11 @@ export function useMediaQuery(query: string): boolean {
 export function useIsMobile(): boolean {
   return useMediaQuery('(max-width: 767px)');
 }
+
+/**
+ * נכון בטלפון ובטאבלט בפורטרט (עד 1023px).
+ * זו נקודת המעבר לתצוגות המצומצמות — ציר אנכי, סינון במגירה וניווט תחתון.
+ */
+export function useIsCompact(): boolean {
+  return useMediaQuery('(max-width: 1023px)');
+}
