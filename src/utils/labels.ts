@@ -2,14 +2,16 @@ import type { Certainty, Corpus, Gender, Relation, RoleTag } from '../types';
 
 export const corpusLabels: Record<Corpus, string> = {
   tanach: 'תנ״ך',
+  'bayit-sheni': 'בית שני',
   mishna: 'משנה',
   talmud: 'תלמוד',
 };
 
 export const corpusDescriptions: Record<Corpus, string> = {
   tanach: 'מאדם הראשון ועד עזרא ונחמיה',
+  'bayit-sheni': 'מימי פרס ויוון, דרך החשמונאים ועד הורדוס והחורבן',
   mishna: 'מאנשי כנסת הגדולה ועד חתימת המשנה',
-  talmud: 'תקופת האמוראים — טרם נוספה למאגר',
+  talmud: 'מרב ושמואל ועד רב אשי ורבינא וחתימת התלמוד',
 };
 
 export const roleLabels: Record<RoleTag, string> = {

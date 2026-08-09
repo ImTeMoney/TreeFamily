@@ -453,6 +453,41 @@ export const events: BibleEvent[] = [
     sources: [{ bookId: 'nechemia', ref: 'ח׳' }],
   },
 
+  // ── ימי בית שני ─────────────────────────────────────────────
+  {
+    id: 'ev-gzerot-antiochus',
+    name: 'גזירות אנטיוכוס',
+    description: 'מלכות יוון גזרה על התורה, על המילה ועל השבת, וטימאה את המקדש.',
+    periodId: 'yavan',
+    at: 122,
+    certainty: 'estimated',
+    personIds: ['matityahu'],
+    bookIds: ['makabim-a'],
+    sources: [{ bookId: 'makabim-a', ref: 'א׳' }],
+  },
+  {
+    id: 'ev-chanukat-hamizbeach',
+    name: 'ניצחון החשמונאים וחנוכת המזבח',
+    description: 'לאחר הניצחון על צבאות יוון טיהרו החשמונאים את המקדש וחנכו את המזבח מחדש.',
+    periodId: 'chashmonaim-mered',
+    at: 126,
+    certainty: 'estimated',
+    personIds: ['yehuda-hamakabi', 'matityahu'],
+    bookIds: ['makabim-a', 'megilat-taanit'],
+    sources: [{ bookId: 'makabim-a', ref: 'ד׳' }, { bookId: 'megilat-taanit', ref: 'כסלו' }],
+  },
+  {
+    id: 'ev-binyan-hordos',
+    name: 'בניין המקדש בימי הורדוס',
+    description: 'הורדוס בנה מחדש את בית המקדש בהידור — "מי שלא ראה בניין הורדוס לא ראה בניין נאה מימיו".',
+    periodId: 'hordos',
+    at: 138,
+    certainty: 'estimated',
+    personIds: ['hordos', 'bava-ben-buta'],
+    bookIds: ['bava-batra', 'suka'],
+    sources: [{ bookId: 'bava-batra', ref: 'ד׳, ט׳' }],
+  },
+
   // ── ספרות חז״ל ──────────────────────────────────────────────
   {
     id: 'ev-machloket-batim',
@@ -470,7 +505,7 @@ export const events: BibleEvent[] = [
     id: 'ev-churban-bayit-sheni',
     name: 'חורבן בית שני',
     description: 'חורבן ירושלים והמקדש השני, וביטול העבודה. המשנה מונה את התקנות שנתקנו "משחרב בית המקדש".',
-    periodId: 'dor-hachurban',
+    periodId: 'churban-bayit-sheni',
     at: 145,
     certainty: 'estimated',
     personIds: ['yochanan-ben-zakai', 'rabban-shimon-ben-gamliel'],
@@ -521,6 +556,30 @@ export const events: BibleEvent[] = [
     personIds: ['rabi-yehuda-hanasi', 'rabi-chiya'],
     bookIds: ['avot'],
     sources: [{ bookId: 'avot', ref: 'א׳, א׳' }],
+  },
+
+  // ── תקופת האמוראים ──────────────────────────────────────────
+  {
+    id: 'ev-yeshivot-bavel',
+    name: 'ייסוד ישיבות בבל',
+    description: 'רב ייסד את ישיבת סורא ושמואל עמד בראש נהרדעא — ראשית מרכז התורה בבבל.',
+    periodId: 'amoraim-1',
+    at: 172,
+    certainty: 'estimated',
+    personIds: ['rav', 'shmuel-amora'],
+    bookIds: ['bavli-brachot'],
+    sources: [{ bookId: 'bavli-brachot', ref: 'ב׳ ע״א' }],
+  },
+  {
+    id: 'ev-chatimat-hatalmud',
+    name: 'חתימת התלמוד הבבלי',
+    description: 'רב אשי ורבינא ערכו וחתמו את התלמוד — "רב אשי ורבינא סוף הוראה".',
+    periodId: 'chatimat-hatalmud',
+    at: 197,
+    certainty: 'estimated',
+    personIds: ['rav-ashi', 'ravina'],
+    bookIds: ['bavli-bava-metzia'],
+    sources: [{ bookId: 'bavli-bava-metzia', ref: 'פ״ו ע״א' }],
   },
 ];
 

@@ -6,7 +6,7 @@ import { cn } from '../utils/cn';
 
 const options: Array<{ id: CorpusFilter; label: string; title: string }> = [
   { id: 'all', label: 'הכול', title: 'כל המקורות יחד, על ציר אחד' },
-  ...(['tanach', 'mishna'] as Corpus[]).map((corpus) => ({
+  ...(['tanach', 'bayit-sheni', 'mishna', 'talmud'] as Corpus[]).map((corpus) => ({
     id: corpus as CorpusFilter,
     label: corpusLabels[corpus],
     title: corpusDescriptions[corpus],
@@ -21,7 +21,10 @@ export function CorpusSwitch({ className }: { className?: string }) {
     <div
       role="group"
       aria-label="בחירת קורפוס"
-      className={cn('flex items-center gap-0.5 rounded-full border border-parchment-300 bg-white/70 p-0.5', className)}
+      className={cn(
+        'no-scrollbar flex max-w-full items-center gap-0.5 overflow-x-auto rounded-full border border-parchment-300 bg-white/70 p-0.5',
+        className,
+      )}
     >
       {options.map((option) => (
         <button
@@ -31,7 +34,7 @@ export function CorpusSwitch({ className }: { className?: string }) {
           aria-pressed={corpus === option.id}
           onClick={() => setCorpus(option.id)}
           className={cn(
-            'rounded-full px-3 py-1 text-xs font-medium transition-colors',
+            'shrink-0 whitespace-nowrap rounded-full px-3 py-1 text-xs font-medium transition-colors',
             corpus === option.id ? 'bg-ink-800 text-parchment-50' : 'text-ink-600 hover:bg-parchment-100',
           )}
         >

@@ -68,6 +68,18 @@ export function matchesRoleGroup(person: Person, groupId: RoleGroupId): boolean 
 
 export type CorpusFilter = Corpus | 'all';
 
+/**
+ * המדורים שבהם הדמות מופיעה — תורה / נביאים / כתובים, או סדר במשנה ובתלמוד.
+ * נגזר מן הספרים שבהם היא נזכרת, ולכן דמות אחת יכולה להשתייך לכמה מדורים:
+ * דוד מופיע בשמואל (נביאים), בתהילים ובדברי הימים (כתובים).
+ */
+export function sectionsOfPerson(person: Person): string[] {
+  const sections = person.bookIds
+    .map((id) => dataset.bookById.get(id)?.section)
+    .filter((section): section is string => Boolean(section));
+  return Array.from(new Set(sections));
+}
+
 /** מסנן פריטים לפי הקורפוס הנבחר. "all" מחזיר את הכול. */
 export function filterByCorpus<T extends { corpus: Corpus }>(items: T[], corpus: CorpusFilter): T[] {
   return corpus === 'all' ? items : items.filter((item) => item.corpus === corpus);

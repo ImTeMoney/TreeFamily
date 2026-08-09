@@ -68,7 +68,7 @@ export type RoleTag =
  * הקורפוס שאליו הדמות או הספר שייכים.
  * מאפשר להציג את התנ״ך ואת ספרות חז״ל על אותו ציר, ולסנן ביניהם.
  */
-export type Corpus = 'tanach' | 'mishna' | 'talmud';
+export type Corpus = 'tanach' | 'bayit-sheni' | 'mishna' | 'talmud';
 
 /** מדור בתוך קורפוס — תורה/נביאים/כתובים, או סדר במשנה */
 export type BookSection = string;

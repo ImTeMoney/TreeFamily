@@ -128,6 +128,86 @@ books.push(
   })),
 );
 
+/** מקורות בני ימי בית שני — אינם חלק מן התנ״ך ואינם מספרות חז״ל */
+books.push(
+  {
+    id: 'makabim-a',
+    name: 'ספר מקבים א׳',
+    corpus: 'bayit-sheni',
+    section: 'chitzoni',
+    order: 200,
+    description: 'תיאור גזירות אנטיוכוס, מרד מתתיהו ובניו ושלטון בית חשמונאי.',
+  },
+  {
+    id: 'makabim-b',
+    name: 'ספר מקבים ב׳',
+    corpus: 'bayit-sheni',
+    section: 'chitzoni',
+    order: 201,
+    description: 'תיאור נוסף של ימי הגזירות והמרד, בסגנון שונה מספר מקבים א׳.',
+  },
+  {
+    id: 'megilat-taanit',
+    name: 'מגילת תענית',
+    corpus: 'bayit-sheni',
+    section: 'chitzoni',
+    order: 202,
+    description: 'רשימת ימים שאירעו בהם נסים בימי בית שני, ושנקבעו כימים שאין מתענים בהם.',
+  },
+);
+
+/** תלמוד בבלי — שלושים ושבע מסכתות, במזהים נפרדים ממסכתות המשנה */
+const bavliTractates: Array<[section: string, mishnaId: string, name: string]> = [
+  ['zeraim', 'brachot', 'ברכות'],
+  ['moed', 'shabbat', 'שבת'],
+  ['moed', 'eruvin', 'עירובין'],
+  ['moed', 'psachim', 'פסחים'],
+  ['moed', 'yoma', 'יומא'],
+  ['moed', 'suka', 'סוכה'],
+  ['moed', 'beitza', 'ביצה'],
+  ['moed', 'rosh-hashana', 'ראש השנה'],
+  ['moed', 'taanit', 'תענית'],
+  ['moed', 'megila', 'מגילה'],
+  ['moed', 'moed-katan', 'מועד קטן'],
+  ['moed', 'chagiga', 'חגיגה'],
+  ['nashim', 'yevamot', 'יבמות'],
+  ['nashim', 'ktubot', 'כתובות'],
+  ['nashim', 'nedarim', 'נדרים'],
+  ['nashim', 'nazir', 'נזיר'],
+  ['nashim', 'sota', 'סוטה'],
+  ['nashim', 'gitin', 'גיטין'],
+  ['nashim', 'kidushin', 'קידושין'],
+  ['nezikin', 'bava-kama', 'בבא קמא'],
+  ['nezikin', 'bava-metzia', 'בבא מציעא'],
+  ['nezikin', 'bava-batra', 'בבא בתרא'],
+  ['nezikin', 'sanhedrin', 'סנהדרין'],
+  ['nezikin', 'makot', 'מכות'],
+  ['nezikin', 'shvuot', 'שבועות'],
+  ['nezikin', 'avoda-zara', 'עבודה זרה'],
+  ['nezikin', 'horayot', 'הוריות'],
+  ['kodashim', 'zvachim', 'זבחים'],
+  ['kodashim', 'menachot', 'מנחות'],
+  ['kodashim', 'chulin', 'חולין'],
+  ['kodashim', 'bchorot', 'בכורות'],
+  ['kodashim', 'arachin', 'ערכין'],
+  ['kodashim', 'tmura', 'תמורה'],
+  ['kodashim', 'kritot', 'כריתות'],
+  ['kodashim', 'meila', 'מעילה'],
+  ['kodashim', 'tamid', 'תמיד'],
+  ['taharot', 'nida', 'נידה'],
+];
+
+books.push(
+  ...bavliTractates.map(([section, mishnaId, name], index) => ({
+    id: `bavli-${mishnaId}`,
+    name: `בבלי ${name}`,
+    corpus: 'talmud' as const,
+    section,
+    order: 300 + index,
+    description: `מסכת ${name} בתלמוד הבבלי — משא ומתן האמוראים על המשנה.`,
+  })),
+);
+
 export const bookById = new Map(books.map((b) => [b.id, b]));
 
 /** תוויות המדורים בתוך כל קורפוס */
@@ -141,11 +221,13 @@ export const sectionLabels: Record<string, string> = {
   nezikin: 'סדר נזיקין',
   kodashim: 'סדר קדשים',
   taharot: 'סדר טהרות',
+  chitzoni: 'ספרים חיצוניים ומקורות בני התקופה',
 };
 
 /** סדר המדורים בתצוגה, לפי קורפוס */
 export const sectionsByCorpus: Record<string, string[]> = {
   tanach: ['torah', 'neviim', 'ketuvim'],
+  'bayit-sheni': ['chitzoni'],
   mishna: ['zeraim', 'moed', 'nashim', 'nezikin', 'kodashim', 'taharot'],
-  talmud: [],
+  talmud: ['zeraim', 'moed', 'nashim', 'nezikin', 'kodashim', 'taharot'],
 };

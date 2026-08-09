@@ -9,7 +9,7 @@ import type { Corpus } from '../types';
 import { useAppState } from '../hooks/useAppState';
 import { corpusDescriptions, corpusLabels } from '../utils/labels';
 
-const corpora: Corpus[] = ['tanach', 'mishna'];
+const corpora: Corpus[] = ['tanach', 'bayit-sheni', 'mishna', 'talmud'];
 
 export function BooksPage() {
   const { corpus } = useAppState();

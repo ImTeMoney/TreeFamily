@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Crosshair, Maximize2, Minus, Plus, RotateCcw } from 'lucide-react';
-import type { Period, Person } from '../types';
+import type { Period, PeriodTrack, Person } from '../types';
 import { dataset } from '../data/repository';
 import { useAppState } from '../hooks/useAppState';
 import { useIsMobile } from '../hooks/useMediaQuery';
-import { byTimeline } from '../utils/people';
+import { byTimeline, filterByCorpus, type CorpusFilter } from '../utils/people';
 import { AXIS_MAX, AXIS_MIN, toPercent } from '../utils/axis';
 import { cn } from '../utils/cn';
 import { TimelinePeriodBand } from './TimelinePeriod';
@@ -44,9 +44,24 @@ function assignLanes(people: Person[], minGap: number): Map<string, number> {
   return result;
 }
 
+const trackLabels: Record<PeriodTrack, string> = {
+  era: 'תקופה היסטורית',
+  chain: 'שלב במסירת התורה',
+};
+
 export function Timeline({ people, focusPeriodId, highlightPersonId, onSelectPeriod, className }: Props) {
   const isMobile = useIsMobile();
-  const { openPerson } = useAppState();
+  const { openPerson, corpus } = useAppState();
+
+  /** הרצועות מסוננות לפי הקורפוס הפעיל, ומחולקות לשני מסלולים */
+  const trackRows = useMemo(
+    () =>
+      (['era', 'chain'] as PeriodTrack[]).map((track) => ({
+        track,
+        periods: filterByCorpus(dataset.periods, corpus).filter((period) => period.track === track),
+      })),
+    [corpus],
+  );
   const scrollRef = useRef<HTMLDivElement>(null);
   const [zoom, setZoom] = useState(1.6);
   const dragState = useRef<{ x: number; scroll: number } | null>(null);
@@ -88,7 +103,9 @@ export function Timeline({ people, focusPeriodId, highlightPersonId, onSelectPer
   }, [highlightPersonId]);
 
   if (isMobile) {
-    return <VerticalTimeline people={people} focusPeriodId={focusPeriodId} className={className} />;
+    return (
+      <VerticalTimeline people={people} focusPeriodId={focusPeriodId} corpus={corpus} className={className} />
+    );
   }
 
   return (
@@ -176,17 +193,25 @@ export function Timeline({ people, focusPeriodId, highlightPersonId, onSelectPer
         className={cn('no-scrollbar overflow-x-auto overflow-y-hidden', dragging ? 'cursor-grabbing' : 'cursor-grab')}
       >
         <div className="relative" style={{ width: `${zoom * 100}%`, minWidth: '100%' }}>
-          {/* רצועות התקופות */}
-          <div className="relative h-9 border-b border-parchment-200 bg-parchment-50/60">
-            {dataset.periods.map((period) => (
-              <TimelinePeriodBand
-                key={period.id}
-                period={period}
-                active={period.id === focusPeriodId}
-                onSelect={onSelectPeriod}
-              />
-            ))}
-          </div>
+          {/* שתי שורות רצועות: תקופה היסטורית, ומתחתיה שלב במסירת התורה */}
+          {trackRows.map(({ track, periods }) =>
+            periods.length === 0 ? null : (
+              <div
+                key={track}
+                className="relative h-9 border-b border-parchment-200 bg-parchment-50/60"
+                title={trackLabels[track]}
+              >
+                {periods.map((period) => (
+                  <TimelinePeriodBand
+                    key={period.id}
+                    period={period}
+                    active={period.id === focusPeriodId}
+                    onSelect={onSelectPeriod}
+                  />
+                ))}
+              </div>
+            ),
+          )}
 
           {/* הדמויות */}
           <div
@@ -212,6 +237,8 @@ export function Timeline({ people, focusPeriodId, highlightPersonId, onSelectPer
       </div>
 
       <p className="border-t border-parchment-200 bg-white/60 px-4 py-2 text-[11px] leading-relaxed text-ink-400">
+        שתי שורות הרצועות מקבילות: העליונה היא התקופה ההיסטורית, והתחתונה היא השלב במסירת התורה — לכן
+        הלל מופיע גם תחת "ימי הורדוס" וגם תחת "הזוגות".
         הציר סכמטי: הוא מציג סדר וחפיפה בין דמויות, ולא שנים היסטוריות. גררו לצדדים, והשתמשו בזום להתמקדות.
         עובי מלא = תקופה ודאית, פסים = תקופה משוערת, מסגרת מקווקוות = לא ניתן לקבוע.
       </p>
@@ -219,24 +246,32 @@ export function Timeline({ people, focusPeriodId, highlightPersonId, onSelectPer
   );
 }
 
-/** גרסת מובייל — ציר אנכי עם כרטיסים לפי תקופות */
+/**
+ * גרסת מובייל — ציר אנכי עם כרטיסים לפי תקופות.
+ * הקיבוץ הוא לפי המסלול ההיסטורי בלבד, כדי שדמות לא תופיע פעמיים
+ * (פעם תחת "ימי הורדוס" ופעם תחת "הזוגות").
+ */
 function VerticalTimeline({
   people,
   focusPeriodId,
+  corpus,
   className,
 }: {
   people: Person[];
   focusPeriodId?: string | null;
+  corpus: CorpusFilter;
   className?: string;
 }) {
   const grouped = useMemo(() => {
-    return dataset.periods.map((period) => ({
-      period,
-      members: people
-        .filter((p) => p.periodIds.includes(period.id) || (p.span.from <= period.to && period.from <= p.span.to))
-        .sort(byTimeline),
-    }));
-  }, [people]);
+    return filterByCorpus(dataset.periods, corpus)
+      .filter((period) => period.track === 'era')
+      .map((period) => ({
+        period,
+        members: people
+          .filter((p) => p.periodIds.includes(period.id) || (p.span.from <= period.to && period.from <= p.span.to))
+          .sort(byTimeline),
+      }));
+  }, [people, corpus]);
 
   return (
     <div className={cn('space-y-6', className)}>

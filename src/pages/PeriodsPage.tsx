@@ -98,25 +98,30 @@ export function PeriodDetailPage() {
       <section>
         <h2 className="section-title mb-3">אנשים שחיו בתקופה ({people.length})</h2>
         <div className="space-y-6">
-          {roleGroups
-            .filter((group) => group.id !== 'all')
-            .map((group) => {
-              const members = people.filter((p) => matchesRoleGroup(p, group.id));
-              if (members.length === 0) return null;
-              return (
-                <div key={group.id}>
-                  <h3 className="mb-2 font-display text-lg font-bold text-ink-800">
-                    {group.label}
-                    <span className="mr-2 text-sm font-normal text-ink-400">{members.length}</span>
-                  </h3>
-                  <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-                    {members.map((person) => (
-                      <PersonCard key={`${group.id}-${person.id}`} person={person} compact />
-                    ))}
+          {(() => {
+            // כל דמות מוצגת פעם אחת בלבד, תחת הקטגוריה הראשונה שהיא תואמת
+            const shown = new Set<string>();
+            return roleGroups
+              .filter((group) => group.id !== 'all')
+              .map((group) => {
+                const members = people.filter((p) => !shown.has(p.id) && matchesRoleGroup(p, group.id));
+                members.forEach((p) => shown.add(p.id));
+                if (members.length === 0) return null;
+                return (
+                  <div key={group.id}>
+                    <h3 className="mb-2 font-display text-lg font-bold text-ink-800">
+                      {group.label}
+                      <span className="mr-2 text-sm font-normal text-ink-400">{members.length}</span>
+                    </h3>
+                    <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                      {members.map((person) => (
+                        <PersonCard key={`${group.id}-${person.id}`} person={person} compact />
+                      ))}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              });
+          })()}
         </div>
       </section>
 

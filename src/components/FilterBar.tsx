@@ -2,6 +2,7 @@ import { Filter, X } from 'lucide-react';
 import type { Gender, RoleTag } from '../types';
 import { dataset } from '../data/repository';
 import { roleLabels } from '../utils/labels';
+import { sectionLabels } from '../data/books';
 import { filterByCorpus } from '../utils/people';
 import { useAppState } from '../hooks/useAppState';
 import { cn } from '../utils/cn';
@@ -9,6 +10,8 @@ import { cn } from '../utils/cn';
 export interface TimelineFilters {
   periodId: string | null;
   bookId: string | null;
+  /** מדור — תורה / נביאים / כתובים, או סדר במשנה ובתלמוד */
+  section: string | null;
   tribe: string | null;
   role: RoleTag | null;
   gender: Gender | null;
@@ -22,6 +25,7 @@ export interface TimelineFilters {
 export const emptyFilters: TimelineFilters = {
   periodId: null,
   bookId: null,
+  section: null,
   tribe: null,
   role: null,
   gender: null,
@@ -80,12 +84,22 @@ export function FilterBar({ value, onChange, className }: Props) {
   const { corpus } = useAppState();
   const periodOptions = filterByCorpus(dataset.periods, corpus);
   const bookOptions = filterByCorpus(dataset.books, corpus);
+  /** המדורים הרלוונטיים לקורפוס הפעיל; ב"הכול" מוצגים כל המדורים לפי סדרם */
+  const sectionOptions = Array.from(
+    new Set(
+      (corpus === 'all'
+        ? Object.values(dataset.sectionsByCorpus).flat()
+        : (dataset.sectionsByCorpus[corpus] ?? [])),
+    ),
+  );
   const set = <K extends keyof TimelineFilters>(key: K, next: TimelineFilters[K]) =>
     onChange({ ...value, [key]: next });
 
-  const activeCount = [value.periodId, value.bookId, value.tribe, value.role, value.gender, value.familyId].filter(
-    Boolean,
-  ).length + (value.onlyCertain ? 1 : 0) + (value.includeEstimated ? 0 : 1);
+  const activeCount =
+    [value.periodId, value.bookId, value.section, value.tribe, value.role, value.gender, value.familyId].filter(Boolean)
+      .length +
+    (value.onlyCertain ? 1 : 0) +
+    (value.includeEstimated ? 0 : 1);
 
   return (
     <div className={cn('card flex flex-wrap items-end gap-3 p-4', className)}>
@@ -102,6 +116,12 @@ export function FilterBar({ value, onChange, className }: Props) {
         value={value.periodId}
         onChange={(v) => set('periodId', v)}
         options={periodOptions.map((p) => ({ value: p.id, label: p.name }))}
+      />
+      <Select
+        label="מדור"
+        value={value.section}
+        onChange={(v) => set('section', v)}
+        options={sectionOptions.map((s) => ({ value: s, label: sectionLabels[s] ?? s }))}
       />
       <Select
         label="ספר"
@@ -177,6 +197,12 @@ export function applyFilters<T extends { periodIds: string[]; bookIds: string[];
   return people.filter((person) => {
     if (filters.periodId && !person.periodIds.includes(filters.periodId)) return false;
     if (filters.bookId && !person.bookIds.includes(filters.bookId)) return false;
+    if (
+      filters.section &&
+      !person.bookIds.some((bookId) => dataset.bookById.get(bookId)?.section === filters.section)
+    ) {
+      return false;
+    }
     if (filters.tribe && person.tribe !== filters.tribe) return false;
     if (filters.role && !person.roles.includes(filters.role)) return false;
     if (filters.gender && person.gender !== filters.gender) return false;
