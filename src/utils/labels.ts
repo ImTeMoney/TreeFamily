@@ -1,0 +1,102 @@
+import type { Certainty, Gender, Relation, RoleTag } from '../types';
+
+export const roleLabels: Record<RoleTag, string> = {
+  patriarch: 'אב האומה',
+  matriarch: 'אם האומה',
+  king: 'מלך',
+  queen: 'מלכה',
+  prophet: 'נביא',
+  prophetess: 'נביאה',
+  priest: 'כהן',
+  levite: 'לוי',
+  judge: 'שופט',
+  warrior: 'לוחם',
+  officer: 'שר ויועץ',
+  scribe: 'סופר',
+  elder: 'זקן ומנהיג',
+  servant: 'עבד ושפחה',
+  craftsman: 'אומן',
+  family: 'בן משפחה',
+  foreigner: 'מעמי הסביבה',
+  other: 'אחר',
+};
+
+/** אימוג׳י מזהה לכל תפקיד — לשימוש ברשימות "מי חי בתקופתו" */
+export const roleEmoji: Record<RoleTag, string> = {
+  patriarch: '🕊️',
+  matriarch: '🕊️',
+  king: '👑',
+  queen: '👑',
+  prophet: '📜',
+  prophetess: '📜',
+  priest: '🕯️',
+  levite: '🎵',
+  judge: '⚖️',
+  warrior: '⚔️',
+  officer: '🛡️',
+  scribe: '✒️',
+  elder: '🏛️',
+  servant: '🏺',
+  craftsman: '🔨',
+  family: '👤',
+  foreigner: '🌍',
+  other: '👤',
+};
+
+export const certaintyLabels: Record<Certainty, string> = {
+  certain: 'ודאי',
+  estimated: 'משוער',
+  unknown: 'לא ידוע',
+};
+
+export const certaintyDots: Record<Certainty, string> = {
+  certain: '🟢',
+  estimated: '🟡',
+  unknown: '🔴',
+};
+
+export const certaintyClasses: Record<Certainty, string> = {
+  certain: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+  estimated: 'bg-amber-50 text-amber-800 border-amber-200',
+  unknown: 'bg-rose-50 text-rose-800 border-rose-200',
+};
+
+export const certaintyExplain: Record<Certainty, string> = {
+  certain: 'התקופה עולה במפורש מן הכתוב',
+  estimated: 'התקופה משוערת על פי ההקשר ורצף הדורות',
+  unknown: 'לא ניתן לקבוע את התקופה מן הכתוב',
+};
+
+export const genderLabels: Record<Gender, string> = {
+  male: 'זכר',
+  female: 'נקבה',
+  unknown: 'לא צוין',
+};
+
+export const relationLabels: Record<Relation['kind'], string> = {
+  father: 'אב',
+  mother: 'אם',
+  son: 'בן',
+  daughter: 'בת',
+  brother: 'אח',
+  sister: 'אחות',
+  husband: 'בעל',
+  wife: 'אישה',
+  ancestor: 'אב קדמון',
+  descendant: 'צאצא',
+  other: 'קשר',
+};
+
+/** קבוצות הסינון המהיר במסך "מי חי בתקופתו" ובמסך תקופה */
+export const roleGroups = [
+  { id: 'all', label: 'כולם', roles: [] as RoleTag[] },
+  { id: 'kings', label: 'מלכים', roles: ['king', 'queen'] as RoleTag[] },
+  { id: 'prophets', label: 'נביאים', roles: ['prophet', 'prophetess'] as RoleTag[] },
+  { id: 'priests', label: 'כהנים ולויים', roles: ['priest', 'levite'] as RoleTag[] },
+  { id: 'women', label: 'נשים', roles: [] as RoleTag[] },
+  { id: 'warriors', label: 'לוחמים ושרים', roles: ['warrior', 'officer'] as RoleTag[] },
+  { id: 'family', label: 'משפחה', roles: ['family', 'patriarch', 'matriarch'] as RoleTag[] },
+  { id: 'other', label: 'אחר', roles: ['servant', 'craftsman', 'scribe', 'elder', 'foreigner', 'judge', 'other'] as RoleTag[] },
+] as const;
+
+export type RoleGroupId = (typeof roleGroups)[number]['id'];

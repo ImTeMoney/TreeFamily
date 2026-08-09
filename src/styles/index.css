@@ -1,0 +1,91 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-parchment-50 text-ink-900 font-sans antialiased;
+    background-image:
+      radial-gradient(1200px 600px at 100% -10%, rgba(193, 154, 75, 0.09), transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, rgba(39, 64, 103, 0.07), transparent 60%);
+    background-attachment: fixed;
+  }
+
+  ::selection {
+    @apply bg-gold-100 text-ink-900;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-2xl border border-parchment-200 bg-white/80 shadow-card backdrop-blur-sm;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-medium
+      transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-500
+      focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-primary {
+    @apply btn bg-ink-800 text-parchment-50 hover:bg-ink-700 hover:shadow-pop;
+  }
+
+  .btn-secondary {
+    @apply btn border border-parchment-300 bg-white/70 text-ink-800 hover:border-gold-500 hover:bg-white;
+  }
+
+  .btn-ghost {
+    @apply btn text-ink-700 hover:bg-parchment-100;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-parchment-300 bg-white/70 px-3 py-1
+      text-xs font-medium text-ink-700 transition-colors hover:border-gold-500 hover:text-ink-900;
+  }
+
+  .chip-active {
+    @apply border-ink-800 bg-ink-800 text-parchment-50 hover:border-ink-800 hover:text-parchment-50;
+  }
+
+  .section-title {
+    @apply font-display text-2xl font-bold text-ink-900 sm:text-3xl;
+  }
+}
+
+/* Scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #cfb98f transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background: #ddcdaf;
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: #cfb98f;
+  background-clip: content-box;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  scrollbar-width: none;
+}

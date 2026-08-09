@@ -1,0 +1,89 @@
+import { useState } from 'react';
+import type { Person } from '../types';
+import { dataset } from '../data/repository';
+import { certaintyLabels, roleEmoji, roleLabels } from '../utils/labels';
+import { displayName } from '../utils/people';
+import { cn } from '../utils/cn';
+
+interface Props {
+  person: Person;
+  lane: number;
+  laneHeight: number;
+  highlighted?: boolean;
+  dimmed?: boolean;
+  onSelect: (person: Person) => void;
+}
+
+const certaintyBarStyles: Record<Person['certainty'], string> = {
+  certain: 'bg-ink-800 text-parchment-50',
+  estimated: 'bg-gold-500/85 text-ink-900 [background-image:repeating-linear-gradient(45deg,transparent,transparent_5px,rgba(255,255,255,.28)_5px,rgba(255,255,255,.28)_10px)]',
+  unknown: 'bg-rose-300/80 text-ink-900 border border-dashed border-rose-500',
+};
+
+/** Bar של דמות על ציר הזמן, עם Tooltip בריחוף */
+export function TimelinePersonBar({ person, lane, laneHeight, highlighted, dimmed, onSelect }: Props) {
+  const [hovered, setHovered] = useState(false);
+  const width = Math.max(person.span.to - person.span.from, 0.8);
+  const period = person.periodIds[0] ? dataset.periodById.get(person.periodIds[0]) : undefined;
+  const family = person.relations.find((r) => r.kind === 'father' || r.kind === 'mother');
+  const familyPerson = family ? dataset.peopleById.get(family.personId) : undefined;
+
+  return (
+    <div
+      className="absolute"
+      style={{ right: `${person.span.from}%`, width: `${width}%`, top: lane * laneHeight }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <button
+        type="button"
+        onClick={() => onSelect(person)}
+        title={`${displayName(person)} — ${period?.name ?? ''}`}
+        className={cn(
+          'flex h-6 w-full items-center gap-1 overflow-hidden rounded-full px-2 text-[11px] font-medium shadow-sm transition-all duration-200',
+          certaintyBarStyles[person.certainty],
+          'hover:scale-[1.02] hover:shadow-pop focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-500',
+          highlighted && 'ring-2 ring-gold-500 ring-offset-1',
+          dimmed && 'opacity-50 saturate-50',
+        )}
+      >
+        <span aria-hidden className="shrink-0 text-[10px]">
+          {roleEmoji[person.roles[0] ?? 'other']}
+        </span>
+        <span className="truncate">{person.name}</span>
+      </button>
+
+      {hovered && (
+        <div className="pointer-events-none absolute right-0 top-7 z-30 w-60 animate-fade-in rounded-xl border border-parchment-300 bg-white p-3 text-right shadow-pop">
+          <p className="font-display text-sm font-bold text-ink-900">{displayName(person)}</p>
+          {person.disambiguation && <p className="mt-0.5 text-[11px] text-gold-600">{person.disambiguation}</p>}
+          <dl className="mt-2 space-y-1 text-xs text-ink-600">
+            <div className="flex gap-1">
+              <dt className="font-semibold text-ink-700">תפקיד:</dt>
+              <dd className="truncate">{person.titles[0] ?? person.roles.map((r) => roleLabels[r]).join(', ')}</dd>
+            </div>
+            <div className="flex gap-1">
+              <dt className="font-semibold text-ink-700">משפחה:</dt>
+              <dd className="truncate">
+                {familyPerson ? `${family?.kind === 'mother' ? 'אם' : 'אב'}: ${familyPerson.name}` : person.tribe ? `שבט ${person.tribe}` : 'לא צוין'}
+              </dd>
+            </div>
+            <div className="flex gap-1">
+              <dt className="font-semibold text-ink-700">תקופה:</dt>
+              <dd className="truncate">{person.span.label ?? period?.name ?? 'לא ידועה'} ({certaintyLabels[person.certainty]})</dd>
+            </div>
+            <div className="flex gap-1">
+              <dt className="font-semibold text-ink-700">מקור:</dt>
+              <dd className="truncate">
+                {person.sources[0]
+                  ? `${dataset.bookById.get(person.sources[0].bookId)?.name ?? ''} ${person.sources[0].ref}`
+                  : 'לא צוין'}
+              </dd>
+            </div>
+          </dl>
+          <p className="mt-2 text-[11px] text-ink-400">לחצו לפתיחת כרטיס הדמות</p>
+        </div>
+      )}
+    </div>
+  );
+}
