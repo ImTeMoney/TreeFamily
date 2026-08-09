@@ -10,9 +10,16 @@ interface Props {
   person: Person;
   lane: number;
   laneHeight: number;
+  /** רוחב הרצועה בפיקסלים בזום הנוכחי — קובע אם השם נכנס בתוכה */
+  barPixels: number;
   highlighted?: boolean;
   dimmed?: boolean;
   onSelect: (person: Person) => void;
+}
+
+/** אומדן הרוחב שהשם צורך: אות ≈ 7px, ועוד אימוג׳י וריווח פנימי */
+export function labelPixels(name: string): number {
+  return name.length * 7 + 30;
 }
 
 const certaintyBarStyles: Record<Person['certainty'], string> = {
@@ -22,9 +29,14 @@ const certaintyBarStyles: Record<Person['certainty'], string> = {
 };
 
 /** Bar של דמות על ציר הזמן, עם Tooltip בריחוף */
-export function TimelinePersonBar({ person, lane, laneHeight, highlighted, dimmed, onSelect }: Props) {
+export function TimelinePersonBar({ person, lane, laneHeight, barPixels, highlighted, dimmed, onSelect }: Props) {
   const [hovered, setHovered] = useState(false);
   const width = lengthToPercent(Math.max(person.span.to - person.span.from, 0.8));
+  /**
+   * כשהרצועה צרה מכדי להכיל את השם, השם יוצא אל מחוץ לרצועה במקום להיחתך.
+   * כך רוחב הרצועה נשאר נאמן לטווח האמיתי, והכיתוב תמיד קריא במלואו.
+   */
+  const labelInside = barPixels >= labelPixels(person.name);
   const period = person.periodIds[0] ? dataset.periodById.get(person.periodIds[0]) : undefined;
   const family = person.relations.find((r) => r.kind === 'father' || r.kind === 'mother');
   const familyPerson = family ? dataset.peopleById.get(family.personId) : undefined;
@@ -41,9 +53,10 @@ export function TimelinePersonBar({ person, lane, laneHeight, highlighted, dimme
         onClick={() => onSelect(person)}
         title={`${displayName(person)} — ${period?.name ?? ''}`}
         className={cn(
-          'flex h-6 w-full items-center gap-1 overflow-hidden rounded-full px-2 text-[11px] font-medium shadow-sm transition-all duration-200',
+          'flex h-6 w-full items-center gap-1 rounded-full px-1.5 text-[11px] font-medium shadow-sm transition-all duration-200',
           certaintyBarStyles[person.certainty],
-          'hover:scale-[1.02] hover:shadow-pop focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-500',
+          'hover:shadow-pop focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-500',
+          labelInside ? 'overflow-hidden px-2' : 'justify-center',
           highlighted && 'ring-2 ring-gold-500 ring-offset-1',
           dimmed && 'opacity-50 saturate-50',
         )}
@@ -51,7 +64,20 @@ export function TimelinePersonBar({ person, lane, laneHeight, highlighted, dimme
         <span aria-hidden className="shrink-0 text-[10px]">
           {roleEmoji[person.roles[0] ?? 'other']}
         </span>
-        <span className="truncate">{person.name}</span>
+        {labelInside && <span className="whitespace-nowrap">{person.name}</span>}
+
+        {/* השם נכתב במלואו לצד הרצועה כשאין בה מקום */}
+        {!labelInside && (
+          <span
+            className={cn(
+              'absolute right-full top-0 z-10 mr-1 flex h-6 items-center whitespace-nowrap rounded px-1',
+              'bg-parchment-50/85 text-[11px] font-medium text-ink-800',
+              hovered && 'bg-white text-ink-900 shadow-sm',
+            )}
+          >
+            {person.name}
+          </span>
+        )}
       </button>
 
       {hovered && (

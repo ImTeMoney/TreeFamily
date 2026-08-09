@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Crosshair, Maximize2, Minus, Plus, RotateCcw } from 'lucide-react';
 import type { Period, PeriodTrack, Person } from '../types';
 import { dataset } from '../data/repository';
@@ -8,7 +8,7 @@ import { byTimeline, filterByCorpus, type CorpusFilter } from '../utils/people';
 import { AXIS_MAX, AXIS_MIN, toPercent } from '../utils/axis';
 import { cn } from '../utils/cn';
 import { TimelinePeriodBand } from './TimelinePeriod';
-import { TimelinePersonBar } from './TimelinePerson';
+import { labelPixels, TimelinePersonBar } from './TimelinePerson';
 import { PersonCard } from './PersonCard';
 
 const LANE_HEIGHT = 30;
@@ -25,21 +25,52 @@ interface Props {
   className?: string;
 }
 
-/** מסדר את הדמויות במסלולים כך ששני Bars לא ייחפפו באותה שורה */
-function assignLanes(people: Person[], minGap: number): Map<string, number> {
+/**
+ * מסדר את הדמויות במסלולים כך ששני Bars לא ייחפפו באותה שורה.
+ * הרווח הנדרש אחרי כל רצועה מחושב לפי רוחב השם בפיקסלים, כדי שיהיה מקום
+ * לכיתוב שיוצא אל מחוץ לרצועה — ולכן ככל שמתקרבים בזום נדרשים פחות מסלולים.
+ */
+function assignLanes(people: Person[], unitsPerPixel: number): Map<string, number> {
   const lanes: number[] = [];
   const result = new Map<string, number>();
   for (const person of [...people].sort(byTimeline)) {
     const start = person.span.from;
     const end = Math.max(person.span.to, start + 0.8);
-    let lane = lanes.findIndex((laneEnd) => start > laneEnd + minGap);
+    const barPixels = (end - start) / unitsPerPixel;
+    /** השטח שהרצועה תופסת בפועל — כולל השם שגולש אחריה, ורווח נשימה קבוע */
+    const trailingPixels = (barPixels >= labelPixels(person.name) ? 0 : labelPixels(person.name)) + 10;
+    const occupiedUntil = end + trailingPixels * unitsPerPixel;
+
+    let lane = lanes.findIndex((laneEnd) => start > laneEnd);
     if (lane === -1) {
       lane = lanes.length;
-      lanes.push(end);
+      lanes.push(occupiedUntil);
     } else {
-      lanes[lane] = end;
+      lanes[lane] = occupiedUntil;
     }
     result.set(person.id, lane);
+  }
+  return result;
+}
+
+/**
+ * מסדר את שמות התקופות בשתי שורות כך שלא יתנגשו זה בזה.
+ * מחזיר 0 לשורה העליונה, 1 לתחתונה, ו-(-1) כשאין מקום — ואז השם מוצג רק בריחוף.
+ */
+function assignBandLabels(periods: Period[], unitsPerPixel: number): Map<string, number> {
+  const slotEnds = [-Infinity, -Infinity];
+  const result = new Map<string, number>();
+
+  for (const period of [...periods].sort((a, b) => a.from - b.from)) {
+    const startPx = period.from / unitsPerPixel;
+    const labelPx = period.name.length * 6.5 + 26;
+    const slot = slotEnds.findIndex((end) => startPx > end);
+    if (slot === -1) {
+      result.set(period.id, -1);
+    } else {
+      slotEnds[slot] = startPx + labelPx;
+      result.set(period.id, slot);
+    }
   }
   return result;
 }
@@ -53,26 +84,37 @@ export function Timeline({ people, focusPeriodId, highlightPersonId, onSelectPer
   const isMobile = useIsMobile();
   const { openPerson, corpus } = useAppState();
 
-  /** הרצועות מסוננות לפי הקורפוס הפעיל, ומחולקות לשני מסלולים */
-  const trackRows = useMemo(
-    () =>
-      (['era', 'chain'] as PeriodTrack[]).map((track) => ({
-        track,
-        periods: filterByCorpus(dataset.periods, corpus).filter((period) => period.track === track),
-      })),
-    [corpus],
-  );
   const scrollRef = useRef<HTMLDivElement>(null);
   const [zoom, setZoom] = useState(1.6);
   const dragState = useRef<{ x: number; scroll: number } | null>(null);
   const [dragging, setDragging] = useState(false);
 
-  /**
-   * רוחב "רעש" למניעת נגיעה בין תוויות — קטן ככל שמתקרבים.
-   * מחושב כשיעור מאורך הציר, כדי שהצפיפות תישאר זהה גם כשהציר מתארך.
-   */
-  const minGap = ((AXIS_MAX - AXIS_MIN) * 0.06) / zoom;
-  const lanes = useMemo(() => assignLanes(people, minGap), [people, minGap]);
+  /** רוחב התצוגה בפועל, כדי לחשב את סידור המסלולים ביחידות אמיתיות של פיקסלים */
+  const [viewWidth, setViewWidth] = useState(1200);
+
+  useLayoutEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const measure = () => setViewWidth(el.clientWidth || 1200);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  /** כמה יחידות ציר שוות לפיקסל אחד בזום הנוכחי */
+  const unitsPerPixel = (AXIS_MAX - AXIS_MIN) / Math.max(viewWidth * zoom, 1);
+  const lanes = useMemo(() => assignLanes(people, unitsPerPixel), [people, unitsPerPixel]);
+
+  /** הרצועות מסוננות לפי הקורפוס הפעיל, ומחולקות לשני מסלולים */
+  const trackRows = useMemo(
+    () =>
+      (['era', 'chain'] as PeriodTrack[]).map((track) => {
+        const periods = filterByCorpus(dataset.periods, corpus).filter((period) => period.track === track);
+        return { track, periods, labelSlots: assignBandLabels(periods, unitsPerPixel) };
+      }),
+    [corpus, unitsPerPixel],
+  );
   const laneCount = useMemo(() => Math.max(...[...lanes.values()], 0) + 1, [lanes]);
 
   /** ממרכז את התצוגה על ערך מסוים בציר (ולא על אחוז) */
@@ -194,17 +236,19 @@ export function Timeline({ people, focusPeriodId, highlightPersonId, onSelectPer
       >
         <div className="relative" style={{ width: `${zoom * 100}%`, minWidth: '100%' }}>
           {/* שתי שורות רצועות: תקופה היסטורית, ומתחתיה שלב במסירת התורה */}
-          {trackRows.map(({ track, periods }) =>
+          {trackRows.map(({ track, periods, labelSlots }) =>
             periods.length === 0 ? null : (
               <div
                 key={track}
-                className="relative h-9 border-b border-parchment-200 bg-parchment-50/60"
+                className="relative h-12 border-b border-parchment-200 bg-parchment-50/60"
                 title={trackLabels[track]}
               >
                 {periods.map((period) => (
                   <TimelinePeriodBand
                     key={period.id}
                     period={period}
+                    bandPixels={(period.to - period.from) / unitsPerPixel}
+                    labelSlot={labelSlots.get(period.id) ?? 0}
                     active={period.id === focusPeriodId}
                     onSelect={onSelectPeriod}
                   />
@@ -224,6 +268,7 @@ export function Timeline({ people, focusPeriodId, highlightPersonId, onSelectPer
                 person={person}
                 lane={lanes.get(person.id) ?? 0}
                 laneHeight={LANE_HEIGHT}
+                barPixels={Math.max(person.span.to - person.span.from, 0.8) / unitsPerPixel}
                 highlighted={person.id === highlightPersonId}
                 dimmed={Boolean(highlightPersonId) && person.id !== highlightPersonId}
                 onSelect={(p) => openPerson(p.id)}
