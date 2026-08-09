@@ -3,6 +3,7 @@ import type { Person } from '../types';
 import { dataset } from '../data/repository';
 import { certaintyLabels, roleEmoji, roleLabels } from '../utils/labels';
 import { displayName } from '../utils/people';
+import { lengthToPercent, toPercent } from '../utils/axis';
 import { cn } from '../utils/cn';
 
 interface Props {
@@ -23,7 +24,7 @@ const certaintyBarStyles: Record<Person['certainty'], string> = {
 /** Bar של דמות על ציר הזמן, עם Tooltip בריחוף */
 export function TimelinePersonBar({ person, lane, laneHeight, highlighted, dimmed, onSelect }: Props) {
   const [hovered, setHovered] = useState(false);
-  const width = Math.max(person.span.to - person.span.from, 0.8);
+  const width = lengthToPercent(Math.max(person.span.to - person.span.from, 0.8));
   const period = person.periodIds[0] ? dataset.periodById.get(person.periodIds[0]) : undefined;
   const family = person.relations.find((r) => r.kind === 'father' || r.kind === 'mother');
   const familyPerson = family ? dataset.peopleById.get(family.personId) : undefined;
@@ -31,7 +32,7 @@ export function TimelinePersonBar({ person, lane, laneHeight, highlighted, dimme
   return (
     <div
       className="absolute"
-      style={{ right: `${person.span.from}%`, width: `${width}%`, top: lane * laneHeight }}
+      style={{ right: `${toPercent(person.span.from)}%`, width: `${width}%`, top: lane * laneHeight }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >

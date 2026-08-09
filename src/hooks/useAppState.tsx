@@ -1,4 +1,13 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import type { CorpusFilter } from '../utils/people';
+
+const CORPUS_STORAGE_KEY = 'bible-map:corpus';
+
+function readStoredCorpus(): CorpusFilter {
+  if (typeof window === 'undefined') return 'all';
+  const stored = window.localStorage.getItem(CORPUS_STORAGE_KEY);
+  return stored === 'tanach' || stored === 'mishna' || stored === 'talmud' ? stored : 'all';
+}
 
 interface AppState {
   /** מזהה הדמות המוצגת בכרטיס הצדדי */
@@ -10,6 +19,9 @@ interface AppState {
   goBack: () => void;
   searchOpen: boolean;
   setSearchOpen: (open: boolean) => void;
+  /** הקורפוס הפעיל — מסנן את כל האתר */
+  corpus: CorpusFilter;
+  setCorpus: (corpus: CorpusFilter) => void;
 }
 
 const AppStateContext = createContext<AppState | null>(null);
@@ -18,6 +30,11 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const [activePersonId, setActivePersonId] = useState<string | null>(null);
   const [history, setHistory] = useState<string[]>([]);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [corpus, setCorpus] = useState<CorpusFilter>(readStoredCorpus);
+
+  useEffect(() => {
+    window.localStorage.setItem(CORPUS_STORAGE_KEY, corpus);
+  }, [corpus]);
 
   const openPerson = useCallback((id: string) => {
     setActivePersonId((current) => {
@@ -43,8 +60,8 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ activePersonId, history, openPerson, closePerson, goBack, searchOpen, setSearchOpen }),
-    [activePersonId, history, openPerson, closePerson, goBack, searchOpen],
+    () => ({ activePersonId, history, openPerson, closePerson, goBack, searchOpen, setSearchOpen, corpus, setCorpus }),
+    [activePersonId, history, openPerson, closePerson, goBack, searchOpen, corpus],
   );
 
   return <AppStateContext.Provider value={value}>{children}</AppStateContext.Provider>;

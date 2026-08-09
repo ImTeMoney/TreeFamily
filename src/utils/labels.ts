@@ -1,4 +1,16 @@
-import type { Certainty, Gender, Relation, RoleTag } from '../types';
+import type { Certainty, Corpus, Gender, Relation, RoleTag } from '../types';
+
+export const corpusLabels: Record<Corpus, string> = {
+  tanach: 'תנ״ך',
+  mishna: 'משנה',
+  talmud: 'תלמוד',
+};
+
+export const corpusDescriptions: Record<Corpus, string> = {
+  tanach: 'מאדם הראשון ועד עזרא ונחמיה',
+  mishna: 'מאנשי כנסת הגדולה ועד חתימת המשנה',
+  talmud: 'תקופת האמוראים — טרם נוספה למאגר',
+};
 
 export const roleLabels: Record<RoleTag, string> = {
   patriarch: 'אב האומה',
@@ -18,6 +30,11 @@ export const roleLabels: Record<RoleTag, string> = {
   craftsman: 'אומן',
   family: 'בן משפחה',
   foreigner: 'מעמי הסביבה',
+  sage: 'חכם',
+  tanna: 'תנא',
+  amora: 'אמורא',
+  nasi: 'נשיא',
+  zug: 'מן הזוגות',
   other: 'אחר',
 };
 
@@ -40,6 +57,11 @@ export const roleEmoji: Record<RoleTag, string> = {
   craftsman: '🔨',
   family: '👤',
   foreigner: '🌍',
+  sage: '📚',
+  tanna: '📚',
+  amora: '📚',
+  nasi: '🏛️',
+  zug: '⚖️',
   other: '👤',
 };
 
@@ -84,6 +106,10 @@ export const relationLabels: Record<Relation['kind'], string> = {
   wife: 'אישה',
   ancestor: 'אב קדמון',
   descendant: 'צאצא',
+  teacher: 'רבו',
+  student: 'תלמידו',
+  colleague: 'חברו',
+  disputant: 'בר פלוגתא',
   other: 'קשר',
 };
 
@@ -94,6 +120,7 @@ export const roleGroups = [
   { id: 'prophets', label: 'נביאים', roles: ['prophet', 'prophetess'] as RoleTag[] },
   { id: 'priests', label: 'כהנים ולויים', roles: ['priest', 'levite'] as RoleTag[] },
   { id: 'women', label: 'נשים', roles: [] as RoleTag[] },
+  { id: 'sages', label: 'חכמים', roles: ['sage', 'tanna', 'amora', 'nasi', 'zug'] as RoleTag[] },
   { id: 'warriors', label: 'לוחמים ושרים', roles: ['warrior', 'officer'] as RoleTag[] },
   { id: 'family', label: 'משפחה', roles: ['family', 'patriarch', 'matriarch'] as RoleTag[] },
   { id: 'other', label: 'אחר', roles: ['servant', 'craftsman', 'scribe', 'elder', 'foreigner', 'judge', 'other'] as RoleTag[] },

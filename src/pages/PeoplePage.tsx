@@ -2,14 +2,18 @@ import { useMemo, useState } from 'react';
 import { dataset } from '../data/repository';
 import { PersonCard } from '../components/PersonCard';
 import { applyFilters, emptyFilters, FilterBar, type TimelineFilters } from '../components/FilterBar';
-import { byTimeline } from '../utils/people';
+import { byTimeline, filterByCorpus } from '../utils/people';
+import { useAppState } from '../hooks/useAppState';
 
 export function PeoplePage() {
+  const { corpus } = useAppState();
   const [filters, setFilters] = useState<TimelineFilters>(emptyFilters);
   const [query, setQuery] = useState('');
 
+  const scoped = useMemo(() => filterByCorpus(dataset.people, corpus), [corpus]);
+
   const people = useMemo(() => {
-    const base = applyFilters(dataset.people, filters).sort(byTimeline);
+    const base = applyFilters(scoped, filters).sort(byTimeline);
     const q = query.trim();
     if (!q) return base;
     return base.filter(
@@ -19,14 +23,14 @@ export function PeoplePage() {
         (p.disambiguation ?? '').includes(q) ||
         p.summary.includes(q),
     );
-  }, [filters, query]);
+  }, [scoped, filters, query]);
 
   return (
     <div className="space-y-5">
       <header>
         <h1 className="section-title">דמויות</h1>
         <p className="text-sm text-ink-600">
-          {dataset.people.length} דמויות במאגר — מלכים ונביאים, וגם דמויות שנזכרות פעם אחת בלבד.
+          {scoped.length} דמויות בתצוגה הנוכחית — מלכים, נביאים וחכמים, וגם דמויות שנזכרות פעם אחת בלבד.
         </p>
       </header>
 

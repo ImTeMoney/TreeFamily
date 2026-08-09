@@ -18,9 +18,12 @@ export function SearchBar({ variant = 'inline', className, autoFocus }: Props) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
-  const { openPerson } = useAppState();
+  const { openPerson, corpus } = useAppState();
 
-  const results = useMemo(() => (query.trim().length > 1 ? search(query, 12) : []), [query]);
+  const results = useMemo(
+    () => (query.trim().length > 1 ? search(query, 12, corpus) : []),
+    [query, corpus],
+  );
 
   useEffect(() => {
     const onClick = (e: MouseEvent) => {

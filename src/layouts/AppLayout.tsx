@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { SearchBar } from '../components/SearchBar';
 import { PersonDrawer } from '../components/PersonDrawer';
+import { CorpusSwitch } from '../components/CorpusSwitch';
 import { cn } from '../utils/cn';
 
 const navItems = [
@@ -22,7 +23,7 @@ const navItems = [
   { to: '/families', label: 'משפחות', icon: TreeDeciduous, end: false },
   { to: '/periods', label: 'תקופות', icon: CalendarDays, end: false },
   { to: '/events', label: 'אירועים', icon: Swords, end: false },
-  { to: '/books', label: 'ספרי התנ״ך', icon: BookOpen, end: false },
+  { to: '/books', label: 'ספרייה', icon: BookOpen, end: false },
 ];
 
 const mobileNav = navItems.filter((item) => ['/', '/timeline', '/people', '/periods', '/families'].includes(item.to));
@@ -43,10 +44,12 @@ export function AppLayout() {
               <ScrollText className="h-5 w-5" aria-hidden />
             </span>
             <span className="leading-tight">
-              <span className="block font-display text-lg font-bold text-ink-900">מפת התנ״ך</span>
+              <span className="block font-display text-lg font-bold text-ink-900">מפת המקורות</span>
               <span className="block text-[11px] text-ink-400">מי חי בתקופה של מי?</span>
             </span>
           </Link>
+
+          <CorpusSwitch className="hidden sm:flex" />
 
           <div className="mr-auto flex flex-1 items-center justify-end gap-2">
             <SearchBar className="hidden w-full max-w-sm md:block" />
@@ -99,11 +102,12 @@ export function AppLayout() {
             </ul>
           </nav>
           <p className="mt-3 px-3 text-[11px] leading-relaxed text-ink-400">
-            כל המידע מבוסס על הכתוב בתנ״ך. תאריכים היסטוריים אינם מוצגים — הציר סכמטי ומציג סדר וחפיפה.
+            המידע מבוסס על הכתוב בתנ״ך ובמשנה. תאריכים היסטוריים אינם מוצגים — הציר סכמטי ומציג סדר וחפיפה.
           </p>
         </aside>
 
         <main className="min-w-0 flex-1 pb-24 lg:pb-6">
+          <CorpusSwitch className="mb-4 w-fit sm:hidden" />
           <Outlet />
         </main>
       </div>

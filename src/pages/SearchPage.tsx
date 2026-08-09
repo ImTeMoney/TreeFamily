@@ -7,14 +7,22 @@ import { useAppState } from '../hooks/useAppState';
 import { displayName } from '../utils/people';
 import { roleEmoji, roleLabels } from '../utils/labels';
 
-const examples = ['אחיתופל', 'בנות צלפחד', 'דוד', 'מי חי בתקופת משה?', 'מי היה אבא של מפיבושת?', 'מי חי בתקופת אליהו?'];
+const examples = [
+  'אחיתופל',
+  'בנות צלפחד',
+  'מי חי בתקופת משה?',
+  'הלל',
+  'בבא בן בוטא',
+  'בית שמאי',
+  'מי חי בתקופת רבי עקיבא?',
+];
 
 export function SearchPage() {
   const [params, setParams] = useSearchParams();
   const query = params.get('q') ?? '';
-  const { openPerson } = useAppState();
+  const { openPerson, corpus } = useAppState();
 
-  const results = useMemo(() => (query.trim() ? search(query, 60) : []), [query]);
+  const results = useMemo(() => (query.trim() ? search(query, 60, corpus) : []), [query, corpus]);
 
   return (
     <div className="space-y-6">

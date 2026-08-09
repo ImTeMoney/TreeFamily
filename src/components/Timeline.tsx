@@ -5,6 +5,7 @@ import { dataset } from '../data/repository';
 import { useAppState } from '../hooks/useAppState';
 import { useIsMobile } from '../hooks/useMediaQuery';
 import { byTimeline } from '../utils/people';
+import { AXIS_MAX, AXIS_MIN, toPercent } from '../utils/axis';
 import { cn } from '../utils/cn';
 import { TimelinePeriodBand } from './TimelinePeriod';
 import { TimelinePersonBar } from './TimelinePerson';
@@ -51,17 +52,21 @@ export function Timeline({ people, focusPeriodId, highlightPersonId, onSelectPer
   const dragState = useRef<{ x: number; scroll: number } | null>(null);
   const [dragging, setDragging] = useState(false);
 
-  /** רוחב "רעש" למניעת נגיעה בין תוויות — קטן ככל שמתקרבים */
-  const minGap = 6 / zoom;
+  /**
+   * רוחב "רעש" למניעת נגיעה בין תוויות — קטן ככל שמתקרבים.
+   * מחושב כשיעור מאורך הציר, כדי שהצפיפות תישאר זהה גם כשהציר מתארך.
+   */
+  const minGap = ((AXIS_MAX - AXIS_MIN) * 0.06) / zoom;
   const lanes = useMemo(() => assignLanes(people, minGap), [people, minGap]);
   const laneCount = useMemo(() => Math.max(...[...lanes.values()], 0) + 1, [lanes]);
 
-  const scrollToPercent = (percent: number) => {
+  /** ממרכז את התצוגה על ערך מסוים בציר (ולא על אחוז) */
+  const scrollToAxis = (value: number) => {
     const el = scrollRef.current;
     if (!el) return;
     const inner = el.scrollWidth;
     // בכיוון RTL הגלילה נמדדת כערך שלילי מהקצה הימני
-    const targetFromRight = (percent / 100) * inner;
+    const targetFromRight = (toPercent(value) / 100) * inner;
     el.scrollTo({ left: -(targetFromRight - el.clientWidth / 2), behavior: 'smooth' });
   };
 
@@ -70,7 +75,7 @@ export function Timeline({ people, focusPeriodId, highlightPersonId, onSelectPer
     const period = dataset.periodById.get(focusPeriodId);
     if (!period) return;
     setZoom((z) => Math.max(z, 2.4));
-    const timer = window.setTimeout(() => scrollToPercent((period.from + period.to) / 2), 60);
+    const timer = window.setTimeout(() => scrollToAxis((period.from + period.to) / 2), 60);
     return () => window.clearTimeout(timer);
   }, [focusPeriodId]);
 
@@ -78,7 +83,7 @@ export function Timeline({ people, focusPeriodId, highlightPersonId, onSelectPer
     if (!highlightPersonId) return;
     const person = dataset.peopleById.get(highlightPersonId);
     if (!person) return;
-    const timer = window.setTimeout(() => scrollToPercent((person.span.from + person.span.to) / 2), 80);
+    const timer = window.setTimeout(() => scrollToAxis((person.span.from + person.span.to) / 2), 80);
     return () => window.clearTimeout(timer);
   }, [highlightPersonId]);
 
@@ -137,7 +142,7 @@ export function Timeline({ people, focusPeriodId, highlightPersonId, onSelectPer
               type="button"
               onClick={() => {
                 const person = dataset.peopleById.get(highlightPersonId);
-                if (person) scrollToPercent((person.span.from + person.span.to) / 2);
+                if (person) scrollToAxis((person.span.from + person.span.to) / 2);
               }}
               className="btn-ghost px-2 py-1"
               title="מיקוד בדמות הנבחרת"

@@ -5,6 +5,9 @@ import { exodusPeople } from './exodus';
 import { judgesPeople } from './judges';
 import { monarchyPeople } from './monarchy';
 import { exilePeople } from './exile';
+import { secondTemplePeople } from './secondTemple';
+import { hillelShammaiPeople } from './hillelShammai';
+import { tannaimPeople } from './tannaim';
 
 /**
  * מאגר הדמויות.
@@ -18,6 +21,9 @@ export const people: Person[] = [
   ...judgesPeople,
   ...monarchyPeople,
   ...exilePeople,
+  ...secondTemplePeople,
+  ...hillelShammaiPeople,
+  ...tannaimPeople,
 ];
 
 export const peopleById = new Map(people.map((p) => [p.id, p]));

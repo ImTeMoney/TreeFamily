@@ -1,6 +1,6 @@
-import { useMemo, useRef, useState } from 'react';
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Minus, Move, Plus, RotateCcw } from 'lucide-react';
-import type { Family, Person } from '../types';
+import type { Family, Person, Relation } from '../types';
 import { dataset } from '../data/repository';
 import { useAppState } from '../hooks/useAppState';
 import { roleEmoji } from '../utils/labels';
@@ -11,6 +11,23 @@ const NODE_H = 56;
 const GAP_X = 24;
 const GAP_Y = 78;
 
+/**
+ * שני מצבי עץ, שניהם נבנים מאותם קשרים ומוצגים באותו רכיב:
+ * "family"  — אב ואם כלפי מעלה, בן ובת כלפי מטה
+ * "masoret" — רב כלפי מעלה, תלמיד כלפי מטה (שרשרת מסירת התורה)
+ */
+export type TreeMode = 'family' | 'masoret';
+
+const modeKinds: Record<TreeMode, { up: Relation['kind'][]; down: Relation['kind'][] }> = {
+  family: { up: ['father', 'mother'], down: ['son', 'daughter'] },
+  masoret: { up: ['teacher'], down: ['student'] },
+};
+
+export const treeModeLabels: Record<TreeMode, string> = {
+  family: 'עץ משפחה',
+  masoret: 'שרשרת המסורה',
+};
+
 interface TreeNode {
   person: Person;
   x: number;
@@ -18,8 +35,9 @@ interface TreeNode {
   children: TreeNode[];
 }
 
-/** בונה את עץ המשפחה מתוך קשרי האב/האם של הדמויות באשכול */
-function buildTree(family: Family): TreeNode[] {
+/** בונה עץ מתוך קשרי ההורה/צאצא או הרב/תלמיד של הדמויות באשכול */
+function buildTree(family: Family, mode: TreeMode): TreeNode[] {
+  const { up, down } = modeKinds[mode];
   const members = family.personIds
     .map((id) => dataset.peopleById.get(id))
     .filter((p): p is Person => Boolean(p));
@@ -31,11 +49,11 @@ function buildTree(family: Family): TreeNode[] {
   for (const person of members) {
     for (const relation of person.relations) {
       if (!memberIds.has(relation.personId)) continue;
-      if (relation.kind === 'son' || relation.kind === 'daughter') {
+      if (down.includes(relation.kind)) {
         childrenOf.set(person.id, [...(childrenOf.get(person.id) ?? []), relation.personId]);
         hasParent.add(relation.personId);
       }
-      if (relation.kind === 'father' || relation.kind === 'mother') {
+      if (up.includes(relation.kind)) {
         childrenOf.set(relation.personId, [...(childrenOf.get(relation.personId) ?? []), person.id]);
         hasParent.add(person.id);
       }
@@ -90,21 +108,35 @@ function flatten(nodes: TreeNode[]): TreeNode[] {
 interface Props {
   family: Family;
   focusPersonId?: string | null;
+  mode?: TreeMode;
   className?: string;
 }
 
-export function FamilyTree({ family, focusPersonId, className }: Props) {
+export function FamilyTree({ family, focusPersonId, mode = 'family', className }: Props) {
   const { openPerson } = useAppState();
   const [scale, setScale] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const drag = useRef<{ x: number; y: number; ox: number; oy: number } | null>(null);
   const [dragging, setDragging] = useState(false);
 
-  const trees = useMemo(() => buildTree(family), [family]);
+  const viewportRef = useRef<HTMLDivElement>(null);
+
+  const trees = useMemo(() => buildTree(family, mode), [family, mode]);
   const nodes = useMemo(() => flatten(trees), [trees]);
 
   const width = Math.max(...nodes.map((n) => n.x), 0) + NODE_W + 40;
   const height = Math.max(...nodes.map((n) => n.y), 0) + NODE_H + 40;
+
+  /** התאמת הזום כך שכל העץ ייכנס למסגרת */
+  const fitToView = useCallback(() => {
+    const el = viewportRef.current;
+    if (!el) return;
+    const fit = Math.min(1, (el.clientWidth - 32) / width, (el.clientHeight - 32) / height);
+    setScale(Math.max(0.4, +fit.toFixed(2)));
+    setOffset({ x: 0, y: 0 });
+  }, [width, height]);
+
+  useLayoutEffect(fitToView, [fitToView]);
 
   const edges = nodes.flatMap((node) =>
     node.children.map((child) => ({
@@ -131,21 +163,14 @@ export function FamilyTree({ family, focusPersonId, className }: Props) {
           <button type="button" onClick={() => setScale((s) => Math.min(2.5, +(s + 0.15).toFixed(2)))} className="btn-ghost px-2 py-1" aria-label="הגדלה">
             <Plus className="h-4 w-4" />
           </button>
-          <button
-            type="button"
-            onClick={() => {
-              setScale(1);
-              setOffset({ x: 0, y: 0 });
-            }}
-            className="btn-ghost px-2 py-1"
-            aria-label="איפוס"
-          >
+          <button type="button" onClick={fitToView} className="btn-ghost px-2 py-1" aria-label="התאמה למסך" title="התאמה למסך">
             <RotateCcw className="h-4 w-4" />
           </button>
         </div>
       </div>
 
       <div
+        ref={viewportRef}
         className={cn('relative h-[34rem] overflow-hidden bg-parchment-50/60', dragging ? 'cursor-grabbing' : 'cursor-grab')}
         onPointerDown={(e) => {
           if ((e.target as HTMLElement).closest('button[data-node]')) return;

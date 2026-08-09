@@ -4,7 +4,7 @@ import { ArrowRight, CalendarClock, Network, ScrollText, Users, X } from 'lucide
 import { dataset } from '../data/repository';
 import { useAppState } from '../hooks/useAppState';
 import { useIsMobile } from '../hooks/useMediaQuery';
-import { displayName, eventsOfPerson, familiesOfPerson } from '../utils/people';
+import { displayName, eventsOfPerson, familiesOfPerson, studyRelations } from '../utils/people';
 import { relationLabels, roleEmoji, roleLabels } from '../utils/labels';
 import { cn } from '../utils/cn';
 import { CertaintyBadge } from './CertaintyBadge';
@@ -45,6 +45,8 @@ export function PersonDrawer() {
   const periods = person.periodIds.map((id) => dataset.periodById.get(id)).filter(Boolean);
   const events = eventsOfPerson(person);
   const familyGroups = familiesOfPerson(person);
+  const study = studyRelations(person);
+  const kin = person.relations.filter((r) => !study.includes(r));
 
   return (
     <>
@@ -160,14 +162,39 @@ export function PersonDrawer() {
                 </div>
               </Section>
 
-              {person.relations.length > 0 && (
+              {kin.length > 0 && (
                 <Section title="משפחה">
                   <ul className="space-y-1">
-                    {person.relations.map((relation) => {
+                    {kin.map((relation) => {
                       const related = dataset.peopleById.get(relation.personId);
                       if (!related) return null;
                       return (
                         <li key={`${relation.personId}-${relation.kind}`}>
+                          <button
+                            type="button"
+                            onClick={() => openPerson(related.id)}
+                            className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-right text-sm transition-colors hover:bg-parchment-100"
+                          >
+                            <span className="w-14 shrink-0 text-xs text-ink-400">
+                              {relation.note ?? relationLabels[relation.kind]}
+                            </span>
+                            <span className="truncate font-medium text-ink-800">{displayName(related)}</span>
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </Section>
+              )}
+
+              {study.length > 0 && (
+                <Section title="רבותיו ותלמידיו">
+                  <ul className="space-y-1">
+                    {study.map((relation) => {
+                      const related = dataset.peopleById.get(relation.personId);
+                      if (!related) return null;
+                      return (
+                        <li key={`${relation.personId}-${relation.kind}-study`}>
                           <button
                             type="button"
                             onClick={() => openPerson(related.id)}
@@ -260,7 +287,9 @@ export function PersonDrawer() {
                 </div>
               ))}
               <div className="rounded-xl border border-parchment-200 bg-white/70 p-4">
-                <h3 className="text-sm font-semibold text-ink-800">קשרים ישירים</h3>
+                <h3 className="text-sm font-semibold text-ink-800">
+                  {study.length > 0 ? 'קשרים ישירים — משפחה ולימוד' : 'קשרים ישירים'}
+                </h3>
                 <ul className="mt-2 space-y-1">
                   {person.relations.map((relation) => {
                     const related = dataset.peopleById.get(relation.personId);

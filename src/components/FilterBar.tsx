@@ -2,6 +2,8 @@ import { Filter, X } from 'lucide-react';
 import type { Gender, RoleTag } from '../types';
 import { dataset } from '../data/repository';
 import { roleLabels } from '../utils/labels';
+import { filterByCorpus } from '../utils/people';
+import { useAppState } from '../hooks/useAppState';
 import { cn } from '../utils/cn';
 
 export interface TimelineFilters {
@@ -31,6 +33,7 @@ export const emptyFilters: TimelineFilters = {
 const roleOptions: RoleTag[] = [
   'king', 'queen', 'prophet', 'prophetess', 'priest', 'levite', 'judge',
   'warrior', 'officer', 'scribe', 'elder', 'servant', 'craftsman', 'family', 'foreigner',
+  'sage', 'tanna', 'nasi', 'zug',
 ];
 
 const tribes = Array.from(new Set(dataset.people.map((p) => p.tribe).filter(Boolean) as string[])).sort((a, b) =>
@@ -74,6 +77,9 @@ function Select<T extends string>({
 }
 
 export function FilterBar({ value, onChange, className }: Props) {
+  const { corpus } = useAppState();
+  const periodOptions = filterByCorpus(dataset.periods, corpus);
+  const bookOptions = filterByCorpus(dataset.books, corpus);
   const set = <K extends keyof TimelineFilters>(key: K, next: TimelineFilters[K]) =>
     onChange({ ...value, [key]: next });
 
@@ -95,13 +101,13 @@ export function FilterBar({ value, onChange, className }: Props) {
         label="תקופה"
         value={value.periodId}
         onChange={(v) => set('periodId', v)}
-        options={dataset.periods.map((p) => ({ value: p.id, label: p.name }))}
+        options={periodOptions.map((p) => ({ value: p.id, label: p.name }))}
       />
       <Select
         label="ספר"
         value={value.bookId}
         onChange={(v) => set('bookId', v)}
-        options={dataset.books.map((b) => ({ value: b.id, label: b.name }))}
+        options={bookOptions.map((b) => ({ value: b.id, label: b.name }))}
       />
       <Select
         label="שבט"

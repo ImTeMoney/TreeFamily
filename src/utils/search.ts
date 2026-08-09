@@ -1,6 +1,6 @@
 import type { BibleEvent, Book, Family, Period, Person } from '../types';
 import { dataset } from '../data/repository';
-import { displayName } from './people';
+import { displayName, filterByCorpus, type CorpusFilter } from './people';
 
 export type SearchResult =
   | { kind: 'person'; id: string; title: string; subtitle: string; person: Person }
@@ -56,13 +56,13 @@ function score(haystacks: string[], terms: string[]): number {
   return total;
 }
 
-export function search(query: string, limit = 30): SearchResult[] {
+export function search(query: string, limit = 30, corpus: CorpusFilter = 'all'): SearchResult[] {
   const terms = tokens(query);
   if (terms.length === 0) return [];
 
   const results: Array<{ result: SearchResult; score: number }> = [];
 
-  for (const person of dataset.people) {
+  for (const person of filterByCorpus(dataset.people, corpus)) {
     const s = score(
       [person.name, person.fullName ?? '', person.disambiguation ?? '', person.tribe ?? '', ...person.titles, person.summary],
       terms,
@@ -75,14 +75,14 @@ export function search(query: string, limit = 30): SearchResult[] {
           kind: 'person',
           id: person.id,
           title: displayName(person),
-          subtitle: [period?.name, person.titles[0]].filter(Boolean).join(' · ') || 'דמות בתנ״ך',
+          subtitle: [period?.name, person.titles[0]].filter(Boolean).join(' · ') || 'דמות במאגר',
           person,
         },
       });
     }
   }
 
-  for (const period of dataset.periods) {
+  for (const period of filterByCorpus(dataset.periods, corpus)) {
     const s = score([period.name, period.description], terms);
     if (s > 0) {
       results.push({
@@ -92,7 +92,12 @@ export function search(query: string, limit = 30): SearchResult[] {
     }
   }
 
-  for (const event of dataset.events) {
+  const scopedEvents =
+    corpus === 'all'
+      ? dataset.events
+      : dataset.events.filter((e) => dataset.periodById.get(e.periodId)?.corpus === corpus);
+
+  for (const event of scopedEvents) {
     const s = score([event.name, event.description], terms);
     if (s > 0) {
       results.push({
@@ -112,7 +117,7 @@ export function search(query: string, limit = 30): SearchResult[] {
     }
   }
 
-  for (const book of dataset.books) {
+  for (const book of filterByCorpus(dataset.books, corpus)) {
     const s = score([book.name, book.description], terms);
     if (s > 0) {
       results.push({

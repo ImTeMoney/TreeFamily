@@ -11,11 +11,15 @@
 /** רמת הוודאות של המיקום בזמן / של הקשר */
 export type Certainty = 'certain' | 'estimated' | 'unknown';
 
-/** מיקום על הסרגל הסכמטי. אינו מייצג שנים. */
+/**
+ * מיקום על הסרגל הסכמטי. אינו מייצג שנים.
+ * 0–100 — התנ״ך, מאדם הראשון ועד עזרא ונחמיה.
+ * 100–200 — ספרות חז״ל, מבית שני ועד חתימת המשנה (והלאה, לכשיתווספו האמוראים).
+ */
 export interface SchematicSpan {
-  /** תחילת הטווח על הסרגל הסכמטי (0–100) */
+  /** תחילת הטווח על הסרגל הסכמטי */
   from: number;
-  /** סוף הטווח על הסרגל הסכמטי (0–100) */
+  /** סוף הטווח על הסרגל הסכמטי */
   to: number;
   certainty: Certainty;
   /** תיאור מילולי של התקופה, למשל "דור המדבר" */
@@ -53,6 +57,18 @@ export type RoleTag =
   | 'craftsman'
   | 'family'
   | 'foreigner'
+  | 'sage'
+  | 'tanna'
+  | 'amora'
+  | 'nasi'
+  | 'zug'
   | 'other';
 
-export type BookSection = 'torah' | 'neviim' | 'ketuvim';
+/**
+ * הקורפוס שאליו הדמות או הספר שייכים.
+ * מאפשר להציג את התנ״ך ואת ספרות חז״ל על אותו ציר, ולסנן ביניהם.
+ */
+export type Corpus = 'tanach' | 'mishna' | 'talmud';
+
+/** מדור בתוך קורפוס — תורה/נביאים/כתובים, או סדר במשנה */
+export type BookSection = string;

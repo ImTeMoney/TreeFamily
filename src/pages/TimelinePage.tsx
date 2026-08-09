@@ -4,8 +4,11 @@ import { dataset } from '../data/repository';
 import { Timeline } from '../components/Timeline';
 import { applyFilters, emptyFilters, FilterBar, type TimelineFilters } from '../components/FilterBar';
 import { CertaintyBadge } from '../components/CertaintyBadge';
+import { useAppState } from '../hooks/useAppState';
+import { filterByCorpus } from '../utils/people';
 
 export function TimelinePage() {
+  const { corpus } = useAppState();
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
   const focusPeriodId = params.get('period');
@@ -16,13 +19,16 @@ export function TimelinePage() {
     periodId: params.get('filterPeriod'),
   }));
 
-  const people = useMemo(() => applyFilters(dataset.people, filters), [filters]);
+  const people = useMemo(
+    () => applyFilters(filterByCorpus(dataset.people, corpus), filters),
+    [filters, corpus],
+  );
 
   return (
     <div className="space-y-5">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="section-title">ציר הזמן של התנ״ך</h1>
+          <h1 className="section-title">ציר הזמן</h1>
           <p className="text-sm text-ink-600">
             כל דמות מיוצגת ברצועה לאורך התקופה שבה חיה. ריחוף מציג פרטים, לחיצה פותחת את כרטיס הדמות.
           </p>
@@ -73,7 +79,7 @@ export function TimelinePage() {
       <section className="card p-4">
         <h2 className="mb-2 font-display text-lg font-bold text-ink-900">מעבר מהיר לתקופה</h2>
         <div className="flex flex-wrap gap-1.5">
-          {dataset.periods.map((period) => (
+          {filterByCorpus(dataset.periods, corpus).map((period) => (
             <button
               key={period.id}
               type="button"

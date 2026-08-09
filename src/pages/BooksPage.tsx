@@ -5,38 +5,59 @@ import { sectionLabels } from '../data/books';
 import { peopleInBook } from '../utils/people';
 import { PersonCard } from '../components/PersonCard';
 import { Timeline } from '../components/Timeline';
-import type { BookSection } from '../types';
+import type { Corpus } from '../types';
+import { useAppState } from '../hooks/useAppState';
+import { corpusDescriptions, corpusLabels } from '../utils/labels';
 
-const sections: BookSection[] = ['torah', 'neviim', 'ketuvim'];
+const corpora: Corpus[] = ['tanach', 'mishna'];
 
 export function BooksPage() {
+  const { corpus } = useAppState();
+  const visibleCorpora = corpus === 'all' ? corpora : corpora.filter((c) => c === corpus);
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <header>
-        <h1 className="section-title">ספרי התנ״ך</h1>
-        <p className="text-sm text-ink-600">בחרו ספר כדי לראות את הדמויות שמופיעות בו, ולמקם אותן על ציר הזמן.</p>
+        <h1 className="section-title">ספרייה</h1>
+        <p className="text-sm text-ink-600">
+          תורה · נביאים · כתובים · שישה סדרי משנה. בחרו ספר או מסכת כדי לראות את הדמויות שמופיעות בהם על ציר הזמן.
+        </p>
       </header>
 
-      {sections.map((section) => (
-        <section key={section}>
-          <h2 className="mb-2 font-display text-xl font-bold text-ink-900">{sectionLabels[section]}</h2>
-          <ul className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
-            {dataset.books
-              .filter((b) => b.section === section)
-              .map((book) => (
-                <li key={book.id}>
-                  <Link
-                    to={`/books/${book.id}`}
-                    className="card block h-full p-4 transition-all hover:-translate-y-0.5 hover:border-gold-500 hover:shadow-pop"
-                  >
-                    <h3 className="font-display text-base font-bold text-ink-900">{book.name}</h3>
-                    <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-ink-600">{book.description}</p>
-                    <p className="mt-2 text-[11px] text-ink-400">{peopleInBook(book.id).length} דמויות במאגר</p>
-                  </Link>
-                </li>
-              ))}
-          </ul>
-        </section>
+      {visibleCorpora.map((currentCorpus) => (
+        <div key={currentCorpus} className="space-y-5">
+          <div className="border-b border-parchment-200 pb-2">
+            <h2 className="font-display text-2xl font-bold text-ink-900">{corpusLabels[currentCorpus]}</h2>
+            <p className="text-xs text-ink-400">{corpusDescriptions[currentCorpus]}</p>
+          </div>
+
+          {(dataset.sectionsByCorpus[currentCorpus] ?? []).map((section) => (
+            <section key={section}>
+              <h3 className="mb-2 font-display text-lg font-bold text-ink-800">{sectionLabels[section]}</h3>
+              <ul className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+                {dataset.books
+                  .filter((b) => b.corpus === currentCorpus && b.section === section)
+                  .map((book) => {
+                    const count = peopleInBook(book.id).length;
+                    return (
+                      <li key={book.id}>
+                        <Link
+                          to={`/books/${book.id}`}
+                          className="card block h-full p-4 transition-all hover:-translate-y-0.5 hover:border-gold-500 hover:shadow-pop"
+                        >
+                          <h4 className="font-display text-base font-bold text-ink-900">{book.name}</h4>
+                          <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-ink-600">{book.description}</p>
+                          <p className="mt-2 text-[11px] text-ink-400">
+                            {count > 0 ? `${count} דמויות במאגר` : 'טרם שויכו דמויות'}
+                          </p>
+                        </Link>
+                      </li>
+                    );
+                  })}
+              </ul>
+            </section>
+          ))}
+        </div>
       ))}
     </div>
   );
@@ -64,11 +85,13 @@ export function BookDetailPage() {
     <div className="space-y-6">
       <button type="button" onClick={() => navigate('/books')} className="btn-ghost text-sm">
         <ArrowRight className="h-4 w-4" />
-        כל הספרים
+        לספרייה
       </button>
 
       <header className="card p-6">
-        <span className="chip">{sectionLabels[book.section]}</span>
+        <span className="chip">
+          {corpusLabels[book.corpus]} · {sectionLabels[book.section]}
+        </span>
         <h1 className="mt-2 font-display text-3xl font-bold text-ink-900">{book.name}</h1>
         <p className="mt-2 max-w-3xl leading-relaxed text-ink-600">{book.description}</p>
       </header>

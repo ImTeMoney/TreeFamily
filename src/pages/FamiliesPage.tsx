@@ -1,7 +1,9 @@
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ArrowRight, TreeDeciduous } from 'lucide-react';
 import { dataset } from '../data/repository';
-import { FamilyTree } from '../components/FamilyTree';
+import { useMemo, useState } from 'react';
+import { FamilyTree, treeModeLabels, type TreeMode } from '../components/FamilyTree';
+import { studyRelations } from '../utils/people';
 import { PersonCard } from '../components/PersonCard';
 import { SourceList } from '../components/SourceList';
 
@@ -39,6 +41,20 @@ export function FamilyDetailPage() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const family = familyId ? dataset.familyById.get(familyId) : undefined;
+
+  /** אשכול שמבוסס על קשרי לימוד מוצג כברירת מחדל כשרשרת מסורה */
+  const hasStudyLinks = useMemo(
+    () =>
+      Boolean(
+        family?.personIds.some((id) => {
+          const member = dataset.peopleById.get(id);
+          return member ? studyRelations(member).length > 0 : false;
+        }),
+      ),
+    [family],
+  );
+  const [mode, setMode] = useState<TreeMode | null>(null);
+  const activeMode: TreeMode = mode ?? (hasStudyLinks ? 'masoret' : 'family');
 
   if (!family) {
     return (
@@ -78,7 +94,23 @@ export function FamilyDetailPage() {
         </div>
       </header>
 
-      <FamilyTree family={family} focusPersonId={params.get('focus')} />
+      {hasStudyLinks && (
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="text-xs text-ink-400">תצוגת העץ:</span>
+          {(['masoret', 'family'] as TreeMode[]).map((option) => (
+            <button
+              key={option}
+              type="button"
+              onClick={() => setMode(option)}
+              className={`chip ${activeMode === option ? 'chip-active' : ''}`}
+            >
+              {treeModeLabels[option]}
+            </button>
+          ))}
+        </div>
+      )}
+
+      <FamilyTree family={family} focusPersonId={params.get('focus')} mode={activeMode} />
 
       <section>
         <h2 className="section-title mb-3">בני המשפחה</h2>

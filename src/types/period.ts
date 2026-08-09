@@ -1,8 +1,9 @@
-import type { Certainty, SourceRef } from './common';
+import type { Certainty, Corpus, SourceRef } from './common';
 
 export interface Period {
   id: string;
   name: string;
+  corpus: Corpus;
   /** תיאור קצר בעברית */
   description: string;
   /** סדר כרונולוגי (1 = מוקדם ביותר) */

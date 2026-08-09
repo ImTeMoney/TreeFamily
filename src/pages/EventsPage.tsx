@@ -5,15 +5,19 @@ import { CertaintyBadge } from '../components/CertaintyBadge';
 import { SourceList } from '../components/SourceList';
 import { PersonCard } from '../components/PersonCard';
 import { contemporariesOf, peopleInEvent } from '../utils/people';
+import { useAppState } from '../hooks/useAppState';
 
 export function EventsPage() {
-  const sorted = [...dataset.events].sort((a, b) => a.at - b.at);
+  const { corpus } = useAppState();
+  const sorted = [...dataset.events]
+    .filter((event) => corpus === 'all' || dataset.periodById.get(event.periodId)?.corpus === corpus)
+    .sort((a, b) => a.at - b.at);
 
   return (
     <div className="space-y-5">
       <header>
         <h1 className="section-title">אירועים</h1>
-        <p className="text-sm text-ink-600">רשימה כרונולוגית של אירועי התנ״ך, מבריאת העולם ועד ימי עזרא ונחמיה.</p>
+        <p className="text-sm text-ink-600">רשימה כרונולוגית, מבריאת העולם ועד חתימת המשנה.</p>
       </header>
 
       <ol className="relative space-y-3 pr-6">

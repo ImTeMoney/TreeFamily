@@ -1,4 +1,4 @@
-import type { Certainty, Gender, RoleTag, SchematicSpan, SourceRef } from './common';
+import type { Certainty, Corpus, Gender, RoleTag, SchematicSpan, SourceRef } from './common';
 
 /** קשר משפחתי בין שתי דמויות */
 export interface Relation {
@@ -14,6 +14,10 @@ export interface Relation {
     | 'wife'
     | 'ancestor'
     | 'descendant'
+    | 'teacher'
+    | 'student'
+    | 'colleague'
+    | 'disputant'
     | 'other';
   certainty: Certainty;
   note?: string;
@@ -32,6 +36,8 @@ export interface Person {
   /** הבחנה קצרה בין דמויות בעלות אותו שם, למשל "שר צבא בימי גדליה" */
   disambiguation?: string;
   gender: Gender;
+  /** הקורפוס שבו הדמות מופיעה. ברירת המחדל בבניית דמות היא "tanach". */
+  corpus: Corpus;
   roles: RoleTag[];
   /** תיאור התפקידים במילים, לדוגמה ["יועץ דוד", "יועץ אבשלום"] */
   titles: string[];

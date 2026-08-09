@@ -6,6 +6,7 @@ type PersonInput = Pick<Person, 'id' | 'name' | 'gender' | 'span' | 'summary'> &
 /** בונה דמות עם ברירות מחדל, כדי לשמור על קבצי הדאטה קריאים. */
 export function person(input: PersonInput): Person {
   return {
+    corpus: 'tanach',
     roles: ['other'],
     titles: [],
     periodIds: [],

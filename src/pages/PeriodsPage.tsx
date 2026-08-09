@@ -7,17 +7,23 @@ import { CertaintyBadge } from '../components/CertaintyBadge';
 import { roleGroups } from '../utils/labels';
 import { matchesRoleGroup } from '../utils/people';
 import { SourceList } from '../components/SourceList';
+import { filterByCorpus } from '../utils/people';
+import { useAppState } from '../hooks/useAppState';
 
 export function PeriodsPage() {
+  const { corpus } = useAppState();
+
   return (
     <div className="space-y-5">
       <header>
         <h1 className="section-title">תקופות</h1>
-        <p className="text-sm text-ink-600">חלוקת התנ״ך לתקופות, מהדורות הראשונים ועד עזרא ונחמיה.</p>
+        <p className="text-sm text-ink-600">
+          מהדורות הראשונים ועד עזרא ונחמיה, ומשם דרך הזוגות והתנאים ועד חתימת המשנה.
+        </p>
       </header>
 
       <ol className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        {dataset.periods.map((period) => {
+        {filterByCorpus(dataset.periods, corpus).map((period) => {
           const count = peopleInPeriod(period.id).length;
           return (
             <li key={period.id}>

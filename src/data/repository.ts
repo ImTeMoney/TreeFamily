@@ -3,7 +3,7 @@ import { people, peopleById } from './people';
 import { periods, periodById } from './periods';
 import { events, eventById } from './events';
 import { families, familyById } from './families';
-import { books, bookById } from './books';
+import { books, bookById, sectionsByCorpus } from './books';
 
 /**
  * שכבת גישה לנתונים.
@@ -55,4 +55,5 @@ export const dataset = {
   familyById,
   books,
   bookById,
+  sectionsByCorpus,
 };

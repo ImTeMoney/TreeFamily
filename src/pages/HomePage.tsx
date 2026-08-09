@@ -4,12 +4,15 @@ import { dataset } from '../data/repository';
 import { Timeline } from '../components/Timeline';
 import { SearchBar } from '../components/SearchBar';
 import { useAppState } from '../hooks/useAppState';
+import { filterByCorpus } from '../utils/people';
 
-const highlights = ['משה', 'דוד', 'אחיתופל', 'מחלה', 'דבורה', 'אליהו', 'רות', 'עזרא'];
+const highlights = ['משה', 'דוד', 'אחיתופל', 'מחלה', 'דבורה', 'אליהו', 'עזרא', 'הלל', 'רבי עקיבא'];
 
 export function HomePage() {
-  const { openPerson } = useAppState();
-  const previewPeople = dataset.people.filter((p) => p.certainty === 'certain');
+  const { openPerson, corpus } = useAppState();
+  const scopedPeople = filterByCorpus(dataset.people, corpus);
+  const scopedPeriods = filterByCorpus(dataset.periods, corpus);
+  const previewPeople = scopedPeople.filter((p) => p.certainty === 'certain' || p.corpus !== 'tanach');
 
   return (
     <div className="space-y-10">
@@ -26,14 +29,14 @@ export function HomePage() {
           <div className="relative mx-auto max-w-3xl">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-parchment-300 bg-white/70 px-3 py-1 text-xs font-medium text-ink-600">
               <Sparkles className="h-3.5 w-3.5 text-gold-600" aria-hidden />
-              {dataset.people.length} דמויות · {dataset.periods.length} תקופות · {dataset.events.length} אירועים
+              {scopedPeople.length} דמויות · {scopedPeriods.length} תקופות · {dataset.books.length} ספרים ומסכתות
             </span>
             <h1 className="mt-5 font-display text-4xl font-bold leading-tight text-ink-900 sm:text-6xl">
-              מפת התנ״ך
+              מפת המקורות
             </h1>
             <p className="mt-3 font-display text-xl text-gold-600 sm:text-2xl">מי חי בתקופה של מי?</p>
             <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-ink-600">
-              חקור את האנשים, המשפחות והאירועים של התנ״ך על ציר זמן אחד.
+              חקור את האנשים, המשפחות והאירועים של התנ״ך והמשנה על ציר זמן אחד — מאדם הראשון ועד רבי יהודה הנשיא.
             </p>
 
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
@@ -58,7 +61,7 @@ export function HomePage() {
             <div className="mt-6 flex flex-wrap items-center justify-center gap-1.5">
               <span className="text-xs text-ink-400">נסו:</span>
               {highlights.map((name) => {
-                const person = dataset.people.find((p) => p.name === name);
+                const person = scopedPeople.find((p) => p.name === name);
                 if (!person) return null;
                 return (
                   <button key={person.id} type="button" onClick={() => openPerson(person.id)} className="chip">
@@ -75,7 +78,7 @@ export function HomePage() {
         <div className="mb-3 flex items-end justify-between gap-3">
           <div>
             <h2 className="section-title">הצצה לציר הזמן</h2>
-            <p className="text-sm text-ink-600">מאדם הראשון ועד שיבת ציון — בציר אחד רציף.</p>
+            <p className="text-sm text-ink-600">מאדם הראשון ועד חתימת המשנה — בציר אחד רציף.</p>
           </div>
           <Link to="/timeline" className="btn-ghost shrink-0 text-sm">
             לציר המלא
@@ -89,15 +92,15 @@ export function HomePage() {
         {[
           {
             title: 'לא רק הדמויות הראשיות',
-            body: 'בנות צלפחד, אחיתופל, ציבא, האישה החכמה מאבל — גם מי שנזכר פעם אחת בכתוב מקבל כרטיס משלו.',
+            body: 'בנות צלפחד, אחיתופל, ציבא, בבא בן בוטא, ברוריה — גם מי שנזכר פעם אחת מקבל כרטיס משלו.',
           },
           {
             title: 'רמת ודאות לכל פריט',
             body: 'המערכת אינה ממציאה תאריכים. לכל דמות מצוין אם התקופה ודאית, משוערת או שלא ניתן לקבוע.',
           },
           {
-            title: 'הכול מקושר',
-            body: 'מדמות לתקופה, מתקופה לאירוע, ומאירוע חזרה לעץ המשפחה — בלי לאבד את ההקשר.',
+            title: 'משפחה ומסורה',
+            body: 'עצי משפחה לצד שרשרת הרב והתלמיד — מהלל, דרך רבן יוחנן בן זכאי ורבי עקיבא, ועד רבי.',
           },
         ].map((item) => (
           <article key={item.title} className="card p-5">

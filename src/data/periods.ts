@@ -1,13 +1,14 @@
 import type { Period } from '../types';
 
 /**
- * התקופות מסודרות על "סרגל סכמטי" של 0–100.
+ * התקופות מסודרות על "סרגל סכמטי": 0–100 לתנ״ך, 100–170 לספרות חז״ל.
  * המספרים מייצגים סדר וחפיפה בלבד — לא שנים היסטוריות.
  */
 export const periods: Period[] = [
   {
     id: 'bereshit',
     name: 'הדורות הראשונים',
+    corpus: 'tanach',
     description: 'מאדם הראשון ועד המבול ודור הפלגה — עשרה דורות מאדם עד נח ועשרה מנח עד אברהם.',
     order: 1,
     from: 0,
@@ -19,6 +20,7 @@ export const periods: Period[] = [
   {
     id: 'avot',
     name: 'תקופת האבות',
+    corpus: 'tanach',
     description: 'אברהם, יצחק ויעקב והאמהות — מהליכת אברהם לארץ כנען ועד ירידת יעקב למצרים.',
     order: 2,
     from: 9,
@@ -30,6 +32,7 @@ export const periods: Period[] = [
   {
     id: 'mitzrayim',
     name: 'ירידה למצרים והשעבוד',
+    corpus: 'tanach',
     description: 'יוסף ואחיו במצרים, ירידת בית יעקב, ושנות השעבוד עד לידת משה.',
     order: 3,
     from: 18,
@@ -44,6 +47,7 @@ export const periods: Period[] = [
   {
     id: 'exodus',
     name: 'יציאת מצרים והמדבר',
+    corpus: 'tanach',
     description: 'יציאת מצרים, מתן תורה, המשכן וארבעים שנות הנדודים במדבר.',
     order: 4,
     from: 25,
@@ -58,6 +62,7 @@ export const periods: Period[] = [
   {
     id: 'yehoshua',
     name: 'כיבוש הארץ',
+    corpus: 'tanach',
     description: 'כניסת בני ישראל לארץ בהנהגת יהושע, כיבוש הארץ וחלוקתה לשבטים.',
     order: 5,
     from: 33,
@@ -69,6 +74,7 @@ export const periods: Period[] = [
   {
     id: 'shoftim',
     name: 'תקופת השופטים',
+    corpus: 'tanach',
     description: 'דורות של שעבוד וגאולה לסירוגין, בהנהגת שופטים מקומיים ואזוריים.',
     order: 6,
     from: 38,
@@ -83,6 +89,7 @@ export const periods: Period[] = [
   {
     id: 'shmuel-shaul',
     name: 'שמואל ושאול',
+    corpus: 'tanach',
     description: 'הנהגת שמואל הנביא, בקשת העם למלך, ומלכות שאול בן קיש.',
     order: 7,
     from: 52,
@@ -94,6 +101,7 @@ export const periods: Period[] = [
   {
     id: 'david',
     name: 'תקופת דוד',
+    corpus: 'tanach',
     description: 'מלכות דוד בחברון ובירושלים, מלחמותיו, מרד אבשלום והכנת בניין המקדש.',
     order: 8,
     from: 58,
@@ -108,6 +116,7 @@ export const periods: Period[] = [
   {
     id: 'shlomo',
     name: 'תקופת שלמה',
+    corpus: 'tanach',
     description: 'מלכות שלמה, בניית בית המקדש הראשון, החכמה והעושר — ופילוג הממלכה לאחר מותו.',
     order: 9,
     from: 67,
@@ -122,6 +131,7 @@ export const periods: Period[] = [
   {
     id: 'mamlachot',
     name: 'ממלכות ישראל ויהודה',
+    corpus: 'tanach',
     description: 'הממלכה המפולגת — מלכי ישראל ומלכי יהודה, ולצידם נביאים כאליהו, אלישע, ישעיהו והושע.',
     order: 10,
     from: 74,
@@ -136,6 +146,7 @@ export const periods: Period[] = [
   {
     id: 'galut-israel',
     name: 'גלות עשרת השבטים',
+    corpus: 'tanach',
     description: 'חורבן שומרון בידי אשור והגליית ממלכת ישראל.',
     order: 11,
     from: 85,
@@ -147,6 +158,7 @@ export const periods: Period[] = [
   {
     id: 'churban',
     name: 'חורבן בית ראשון',
+    corpus: 'tanach',
     description: 'ימי יאשיהו האחרונים, מלכי יהודה האחרונים, חורבן ירושלים ובית המקדש בידי בבל.',
     order: 12,
     from: 88,
@@ -161,6 +173,7 @@ export const periods: Period[] = [
   {
     id: 'bavel',
     name: 'גלות בבל',
+    corpus: 'tanach',
     description: 'הגולים בבבל — יחזקאל, דניאל וחבריו, ומשפחת המלוכה בגולה.',
     order: 13,
     from: 90,
@@ -175,6 +188,7 @@ export const periods: Period[] = [
   {
     id: 'shivat-tzion',
     name: 'שיבת ציון',
+    corpus: 'tanach',
     description: 'הצהרת כורש, עליית זרובבל ויהושע בן יהוצדק ובניית בית המקדש השני.',
     order: 14,
     from: 94,
@@ -189,6 +203,7 @@ export const periods: Period[] = [
   {
     id: 'ezra-nechemia',
     name: 'עזרא ונחמיה',
+    corpus: 'tanach',
     description: 'סוף תקופת התנ״ך — עליית עזרא, בניית חומת ירושלים בידי נחמיה, ומעמד קריאת התורה.',
     order: 15,
     from: 96,
@@ -199,6 +214,104 @@ export const periods: Period[] = [
       { bookId: 'ezra', ref: 'ז׳–י׳' },
       { bookId: 'nechemia', ref: 'א׳–י״ג' },
     ],
+  },
+
+  // ── ספרות חז״ל ──────────────────────────────────────────────
+  {
+    id: 'bayit-sheni',
+    name: 'בית שני ואנשי כנסת הגדולה',
+    corpus: 'mishna',
+    description: 'מסוף הנבואה ואילך — אנשי כנסת הגדולה, שמעון הצדיק וראשית מסירת התורה שבעל פה.',
+    order: 16,
+    from: 100,
+    to: 118,
+    certainty: 'estimated',
+    color: '#5b7a9c',
+    sources: [{ bookId: 'avot', ref: 'א׳, א׳–ג׳' }],
+  },
+  {
+    id: 'zugot',
+    name: 'תקופת הזוגות',
+    corpus: 'mishna',
+    description: 'חמישה זוגות של נשיא ואב בית דין, מיוסי בן יועזר ויוסי בן יוחנן ועד שמעיה ואבטליון.',
+    order: 17,
+    from: 118,
+    to: 133,
+    certainty: 'estimated',
+    color: '#6b6ba0',
+    sources: [{ bookId: 'avot', ref: 'א׳, ד׳–י״א' }, { bookId: 'chagiga', ref: 'ב׳, ב׳' }],
+  },
+  {
+    id: 'hillel-shammai',
+    name: 'הלל ושמאי ובתיהם',
+    corpus: 'mishna',
+    description: 'הזוג האחרון — הלל הזקן ושמאי — ותלמידיהם, בית הלל ובית שמאי, שנחלקו במאות הלכות.',
+    order: 18,
+    from: 130,
+    to: 141,
+    certainty: 'estimated',
+    color: '#8a5f9e',
+    sources: [{ bookId: 'avot', ref: 'א׳, י״ב–ט״ו' }, { bookId: 'eduyot', ref: 'א׳' }],
+  },
+  {
+    id: 'dor-hachurban',
+    name: 'דור החורבן ורבן יוחנן בן זכאי',
+    corpus: 'mishna',
+    description: 'חורבן בית שני, יציאת רבן יוחנן בן זכאי מירושלים והקמת מרכז התורה ביבנה.',
+    order: 19,
+    from: 138,
+    to: 147,
+    certainty: 'estimated',
+    color: '#9c5a5a',
+    sources: [{ bookId: 'avot', ref: 'ב׳, ח׳–ט׳' }, { bookId: 'rosh-hashana', ref: 'ד׳, א׳' }],
+  },
+  {
+    id: 'tanaim-yavne',
+    name: 'תנאים — דור יבנה',
+    corpus: 'mishna',
+    description: 'רבן גמליאל דיבנה, רבי אליעזר, רבי יהושע ורבי אלעזר בן עזריה — דור שביסס את ההלכה אחרי החורבן.',
+    order: 20,
+    from: 144,
+    to: 153,
+    certainty: 'estimated',
+    color: '#4f7f8a',
+    sources: [{ bookId: 'avot', ref: 'ב׳, ט׳–י״ד' }, { bookId: 'brachot', ref: 'ד׳, ג׳' }],
+  },
+  {
+    id: 'tanaim-akiva',
+    name: 'תנאים — דור רבי עקיבא',
+    corpus: 'mishna',
+    description: 'רבי עקיבא ובני דורו, מרד בר כוכבא ועשרה הרוגי מלכות.',
+    order: 21,
+    from: 150,
+    to: 159,
+    certainty: 'estimated',
+    color: '#3f7d5a',
+    sources: [{ bookId: 'avot', ref: 'ג׳' }, { bookId: 'yevamot', ref: 'ט״ז, ז׳' }],
+  },
+  {
+    id: 'tanaim-usha',
+    name: 'תנאים — דור אושא',
+    corpus: 'mishna',
+    description: 'תלמידי רבי עקיבא — רבי מאיר, רבי יהודה, רבי שמעון, רבי יוסי ורבי נחמיה — שהעמידו את רוב המשנה.',
+    order: 22,
+    from: 156,
+    to: 165,
+    certainty: 'estimated',
+    color: '#a37f36',
+    sources: [{ bookId: 'avot', ref: 'ד׳' }, { bookId: 'sanhedrin', ref: 'י״א' }],
+  },
+  {
+    id: 'rabi-chatimat-hamishna',
+    name: 'רבי יהודה הנשיא וחתימת המשנה',
+    corpus: 'mishna',
+    description: 'רבי יהודה הנשיא ובית דינו — עריכת המשנה וסידורה לשישה סדרים, סוף תקופת התנאים.',
+    order: 23,
+    from: 162,
+    to: 170,
+    certainty: 'estimated',
+    color: '#c19a4b',
+    sources: [{ bookId: 'avot', ref: 'ב׳, א׳' }, { bookId: 'bava-metzia', ref: 'ה׳' }],
   },
 ];
 

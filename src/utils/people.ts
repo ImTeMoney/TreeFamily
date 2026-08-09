@@ -1,4 +1,4 @@
-import type { BibleEvent, Family, Person, RoleTag } from '../types';
+import type { BibleEvent, Corpus, Family, Person, RoleTag } from '../types';
 import { dataset } from '../data/repository';
 import { roleGroups, type RoleGroupId } from './labels';
 
@@ -64,6 +64,20 @@ export function matchesRoleGroup(person: Person, groupId: RoleGroupId): boolean 
   const group = roleGroups.find((g) => g.id === groupId);
   if (!group) return true;
   return person.roles.some((r) => (group.roles as RoleTag[]).includes(r));
+}
+
+export type CorpusFilter = Corpus | 'all';
+
+/** מסנן פריטים לפי הקורפוס הנבחר. "all" מחזיר את הכול. */
+export function filterByCorpus<T extends { corpus: Corpus }>(items: T[], corpus: CorpusFilter): T[] {
+  return corpus === 'all' ? items : items.filter((item) => item.corpus === corpus);
+}
+
+/** קשרי לימוד — רב, תלמיד, חבר ובר פלוגתא */
+export function studyRelations(person: Person) {
+  return person.relations.filter(
+    (r) => r.kind === 'teacher' || r.kind === 'student' || r.kind === 'colleague' || r.kind === 'disputant',
+  );
 }
 
 /** מיון יציב לפי מיקום על הציר ואז לפי שם */
