@@ -1,11 +1,13 @@
 import type { Period } from '../types';
-import { lengthToPercent, toPercent } from '../utils/axis';
+import type { AxisScale } from '../utils/axis';
 import { cn } from '../utils/cn';
 
 interface Props {
   period: Period;
   /** רוחב הרצועה בפיקסלים בזום הנוכחי */
   bandPixels: number;
+  /** הסקאלה של החלון הנראה בציר */
+  scale: AxisScale;
   /** שורת הכיתוב: 0 עליונה, 1 תחתונה, (-1) אין מקום — השם יוצג בריחוף בלבד */
   labelSlot: number;
   /** רצועת עידן — בולטת יותר, כשורת ההתמצאות העליונה */
@@ -20,7 +22,7 @@ function periodLabelPixels(name: string): number {
 }
 
 /** רצועת תקופה ברקע ציר הזמן */
-export function TimelinePeriodBand({ period, bandPixels, labelSlot, emphasis, active, onSelect }: Props) {
+export function TimelinePeriodBand({ period, bandPixels, scale, labelSlot, emphasis, active, onSelect }: Props) {
   /** כשהרצועה צרה מדי, השם נכתב במלואו וגולש החוצה במקום להיחתך */
   const labelInside = bandPixels >= periodLabelPixels(period.name);
   const hiddenLabel = labelSlot < 0;
@@ -31,8 +33,8 @@ export function TimelinePeriodBand({ period, bandPixels, labelSlot, emphasis, ac
       onClick={() => onSelect?.(period)}
       title={period.name}
       style={{
-        right: `${toPercent(period.from)}%`,
-        width: `${lengthToPercent(period.to - period.from)}%`,
+        right: `${scale.toPercent(period.from)}%`,
+        width: `${scale.lengthToPercent(Math.min(period.to, scale.max) - period.from)}%`,
         backgroundColor: emphasis && !active ? `${period.color}1f` : undefined,
         borderInlineEndColor: emphasis ? `${period.color}66` : undefined,
       }}

@@ -141,7 +141,7 @@ export const timelineGroups = [
   { id: 'sages', label: 'חכמים', color: '#2f7d78', roles: ['sage', 'tanna', 'amora', 'zug', 'scribe'] },
   { id: 'priests', label: 'כהנים ולויים', color: '#a37f36', roles: ['priest', 'levite'] },
   { id: 'warriors', label: 'לוחמים ושרים', color: '#8f3a3a', roles: ['warrior', 'officer'] },
-  { id: 'others', label: 'משפחה ואחרים', color: '#6b7a8f', roles: [] as RoleTag[] },
+  { id: 'others', label: 'משפחה ואחרים', color: '#9c6f4b', roles: [] as RoleTag[] },
 ] as const satisfies ReadonlyArray<{ id: string; label: string; color: string; roles: readonly RoleTag[] }>;
 
 export type TimelineGroupId = (typeof timelineGroups)[number]['id'];

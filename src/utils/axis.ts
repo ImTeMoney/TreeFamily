@@ -22,3 +22,28 @@ export function toPercent(value: number): number {
 export function lengthToPercent(length: number): number {
   return (length / AXIS_RANGE) * 100;
 }
+
+export interface AxisScale {
+  min: number;
+  max: number;
+  toPercent: (value: number) => number;
+  lengthToPercent: (length: number) => number;
+}
+
+/**
+ * סקאלה לחלון חלקי של הציר.
+ * כשהציר נפתח בהדרגה, הטווח הנראה קצר מהטווח המלא — ואותו רוחב מסך מתחלק בין
+ * פחות שנים, ולכן הרצועות והכיתובים גדולים וברורים יותר.
+ */
+export function createAxisScale(min: number, max: number): AxisScale {
+  const range = Math.max(max - min, 1);
+  return {
+    min,
+    max,
+    toPercent: (value) => ((value - min) / range) * 100,
+    lengthToPercent: (length) => (length / range) * 100,
+  };
+}
+
+/** הסקאלה המלאה — ברירת המחדל כשאין חשיפה הדרגתית */
+export const fullAxisScale = createAxisScale(AXIS_MIN, AXIS_MAX);

@@ -61,6 +61,7 @@ export function TimelinePage() {
 
       <Timeline
         people={people}
+        progressive
         focusPeriodId={focusPeriodId}
         highlightPersonId={highlightPersonId}
         onSelectPeriod={(period) => {

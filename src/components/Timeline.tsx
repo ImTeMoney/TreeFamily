@@ -1,12 +1,13 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { Crosshair, Maximize2, Minus, Plus, RotateCcw } from 'lucide-react';
+import { ChevronsLeft, Crosshair, Maximize2, Minus, Plus, RotateCcw } from 'lucide-react';
 import type { Period, PeriodTrack, Person } from '../types';
 import { dataset } from '../data/repository';
 import { useAppState } from '../hooks/useAppState';
 import { useIsCompact } from '../hooks/useMediaQuery';
 import { byTimeline, filterByCorpus, type CorpusFilter } from '../utils/people';
 import { timelineGroupOf, timelineGroups } from '../utils/labels';
-import { AXIS_MAX, AXIS_MIN, toPercent } from '../utils/axis';
+import { AXIS_MAX, AXIS_MIN, createAxisScale } from '../utils/axis';
+import type { AxisScale } from '../utils/axis';
 import { cn } from '../utils/cn';
 import { TimelinePeriodBand } from './TimelinePeriod';
 import { labelPixels, TimelinePersonBar } from './TimelinePerson';
@@ -22,6 +23,11 @@ interface Props {
   focusPeriodId?: string | null;
   /** דמות המודגשת על הציר */
   highlightPersonId?: string | null;
+  /**
+   * חשיפה הדרגתית: הציר נפתח על העידן הראשון בלבד, וכל לחיצה מוסיפה את הבא.
+   * במסכי ספר ותקופה, שבהם ממילא מוצגת קבוצה קטנה, המצב כבוי.
+   */
+  progressive?: boolean;
   onSelectPeriod?: (period: Period) => void;
   className?: string;
 }
@@ -58,12 +64,12 @@ function assignLanes(people: Person[], unitsPerPixel: number): Map<string, numbe
  * מסדר את שמות התקופות בשתי שורות כך שלא יתנגשו זה בזה.
  * מחזיר 0 לשורה העליונה, 1 לתחתונה, ו-(-1) כשאין מקום — ואז השם מוצג רק בריחוף.
  */
-function assignBandLabels(periods: Period[], unitsPerPixel: number): Map<string, number> {
+function assignBandLabels(periods: Period[], unitsPerPixel: number, scale: AxisScale): Map<string, number> {
   const slotEnds = [-Infinity, -Infinity];
   const result = new Map<string, number>();
 
   for (const period of [...periods].sort((a, b) => a.from - b.from)) {
-    const startPx = period.from / unitsPerPixel;
+    const startPx = (period.from - scale.min) / unitsPerPixel;
     const labelPx = period.name.length * 6.5 + 26;
     const slot = slotEnds.findIndex((end) => startPx > end);
     if (slot === -1) {
@@ -82,12 +88,61 @@ const trackLabels: Record<PeriodTrack, string> = {
   chain: 'שלב במסירת התורה',
 };
 
-export function Timeline({ people, focusPeriodId, highlightPersonId, onSelectPeriod, className }: Props) {
+export function Timeline({
+  people,
+  focusPeriodId,
+  highlightPersonId,
+  progressive = false,
+  onSelectPeriod,
+  className,
+}: Props) {
   const isCompact = useIsCompact();
   const { openPerson, corpus } = useAppState();
 
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [zoom, setZoom] = useState(1.6);
+  const [zoom, setZoom] = useState(progressive ? 1 : 1.6);
+
+  /**
+   * יחידת החשיפה ההדרגתית היא התקופה ההיסטורית המפורטת — כך המסך הראשון
+   * מציג עשרות בודדות של דמויות ברוחב מלא, ולא מאות רצועות זעירות.
+   */
+  const ages = useMemo(
+    () =>
+      filterByCorpus(dataset.periods, corpus)
+        .filter((period) => period.track === 'era')
+        .sort((a, b) => a.from - b.from),
+    [corpus],
+  );
+
+  const [revealedAges, setRevealedAges] = useState(1);
+  const allRevealed = !progressive || revealedAges >= ages.length;
+  /** קצה החלון הנראה: סוף העידן האחרון שנפתח */
+  const windowMax = allRevealed ? AXIS_MAX : (ages[revealedAges - 1]?.to ?? AXIS_MAX);
+  const nextAge = allRevealed ? undefined : ages[revealedAges];
+
+  const scale = useMemo(() => createAxisScale(AXIS_MIN, windowMax), [windowMax]);
+
+  /** רק דמויות שמתחילות בתוך החלון */
+  const visiblePeople = useMemo(
+    () => (allRevealed ? people : people.filter((p) => p.span.from < windowMax)),
+    [people, allRevealed, windowMax],
+  );
+  const nextAgeCount = nextAge
+    ? people.filter((p) => p.span.from >= windowMax && p.span.from < nextAge.to).length
+    : 0;
+
+  // כשמגיעים בקישור עמוק לתקופה או לדמות שמחוץ לחלון, נפתחות התקופות עד אליה
+  useEffect(() => {
+    if (!progressive) return;
+    const target = focusPeriodId
+      ? dataset.periodById.get(focusPeriodId)?.to
+      : highlightPersonId
+        ? dataset.peopleById.get(highlightPersonId)?.span.to
+        : undefined;
+    if (target === undefined) return;
+    const needed = ages.findIndex((age) => age.to >= target) + 1;
+    if (needed > 0) setRevealedAges((current) => Math.max(current, needed));
+  }, [progressive, focusPeriodId, highlightPersonId, ages]);
   const dragState = useRef<{ x: number; scroll: number } | null>(null);
   const [dragging, setDragging] = useState(false);
 
@@ -105,7 +160,7 @@ export function Timeline({ people, focusPeriodId, highlightPersonId, onSelectPer
   }, []);
 
   /** כמה יחידות ציר שוות לפיקסל אחד בזום הנוכחי */
-  const unitsPerPixel = (AXIS_MAX - AXIS_MIN) / Math.max(viewWidth * zoom, 1);
+  const unitsPerPixel = (windowMax - AXIS_MIN) / Math.max(viewWidth * zoom, 1);
 
   /**
    * הדמויות מחולקות לשורות לפי קטגוריה, וכל קטגוריה מסודרת במסלולים בנפרד.
@@ -113,7 +168,7 @@ export function Timeline({ people, focusPeriodId, highlightPersonId, onSelectPer
    */
   const groupedPeople = useMemo(() => {
     const byGroup = new Map<string, Person[]>();
-    for (const person of people) {
+    for (const person of visiblePeople) {
       const group = timelineGroupOf(person.roles);
       byGroup.set(group.id, [...(byGroup.get(group.id) ?? []), person]);
     }
@@ -124,16 +179,18 @@ export function Timeline({ people, focusPeriodId, highlightPersonId, onSelectPer
         return { group, members, lanes, laneCount: Math.max(...[...lanes.values()], 0) + 1 };
       })
       .filter(({ members }) => members.length > 0);
-  }, [people, unitsPerPixel]);
+  }, [visiblePeople, unitsPerPixel]);
 
   /** הרצועות מסוננות לפי הקורפוס הפעיל, ומחולקות לשני מסלולים */
   const trackRows = useMemo(
     () =>
       (['age', 'era', 'chain'] as PeriodTrack[]).map((track) => {
-        const periods = filterByCorpus(dataset.periods, corpus).filter((period) => period.track === track);
-        return { track, periods, labelSlots: assignBandLabels(periods, unitsPerPixel) };
+        const periods = filterByCorpus(dataset.periods, corpus).filter(
+          (period) => period.track === track && period.from < windowMax,
+        );
+        return { track, periods, labelSlots: assignBandLabels(periods, unitsPerPixel, scale) };
       }),
-    [corpus, unitsPerPixel],
+    [corpus, unitsPerPixel, windowMax, scale],
   );
 
   /** ממרכז את התצוגה על ערך מסוים בציר (ולא על אחוז) */
@@ -142,7 +199,7 @@ export function Timeline({ people, focusPeriodId, highlightPersonId, onSelectPer
     if (!el) return;
     const inner = el.scrollWidth;
     // בכיוון RTL הגלילה נמדדת כערך שלילי מהקצה הימני
-    const targetFromRight = (toPercent(value) / 100) * inner;
+    const targetFromRight = (scale.toPercent(value) / 100) * inner;
     el.scrollTo({ left: -(targetFromRight - el.clientWidth / 2), behavior: 'smooth' });
   };
 
@@ -165,7 +222,17 @@ export function Timeline({ people, focusPeriodId, highlightPersonId, onSelectPer
 
   if (isCompact) {
     return (
-      <VerticalTimeline people={people} focusPeriodId={focusPeriodId} corpus={corpus} className={className} />
+      <VerticalTimeline
+        people={visiblePeople}
+        focusPeriodId={focusPeriodId}
+        corpus={corpus}
+        windowMax={windowMax}
+        nextAge={nextAge}
+        nextAgeCount={nextAgeCount}
+        onReveal={() => setRevealedAges((current) => current + 1)}
+        onRevealAll={() => setRevealedAges(ages.length)}
+        className={className}
+      />
     );
   }
 
@@ -174,8 +241,51 @@ export function Timeline({ people, focusPeriodId, highlightPersonId, onSelectPer
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-parchment-200 bg-white/70 px-4 py-2">
         <div className="flex items-center gap-2 text-sm text-ink-600">
           <span className="font-display font-bold text-ink-900">ציר הזמן</span>
-          <span className="text-ink-400">· {people.length} דמויות</span>
+          <span className="text-ink-400">
+            ·{' '}
+            {allRevealed ? `${people.length} דמויות` : `${visiblePeople.length} מתוך ${people.length} דמויות`}
+          </span>
         </div>
+        {progressive && (
+          <div className="order-3 flex w-full flex-wrap items-center gap-2 border-t border-parchment-200 pt-2 lg:order-none lg:w-auto lg:border-0 lg:pt-0">
+            {nextAge ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const target = nextAge.to;
+                    setRevealedAges((current) => current + 1);
+                    window.setTimeout(() => scrollToAxis(target), 120);
+                  }}
+                  className="btn-primary text-sm"
+                >
+                  <ChevronsLeft className="h-4 w-4" aria-hidden />
+                  התקופה הבאה: {nextAge.name}
+                  <span className="rounded-full bg-parchment-50/20 px-1.5 text-xs">+{nextAgeCount}</span>
+                </button>
+                <button type="button" onClick={() => setRevealedAges(ages.length)} className="btn-ghost text-xs">
+                  הצג את הכול
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setRevealedAges(1);
+                  scrollRef.current?.scrollTo({ left: 0, behavior: 'smooth' });
+                }}
+                className="btn-ghost text-xs"
+              >
+                <RotateCcw className="h-3.5 w-3.5" aria-hidden />
+                להתחיל מחדש מההתחלה
+              </button>
+            )}
+            <span className="text-[11px] text-ink-400">
+              תקופה {Math.min(revealedAges, ages.length)}/{ages.length}
+            </span>
+          </div>
+        )}
+
         <div className="flex items-center gap-1">
           <button
             type="button"
@@ -271,7 +381,8 @@ export function Timeline({ people, focusPeriodId, highlightPersonId, onSelectPer
                   <TimelinePeriodBand
                     key={period.id}
                     period={period}
-                    bandPixels={(period.to - period.from) / unitsPerPixel}
+                    bandPixels={(Math.min(period.to, windowMax) - period.from) / unitsPerPixel}
+                    scale={scale}
                     labelSlot={track === 'age' ? 0 : (labelSlots.get(period.id) ?? 0)}
                     emphasis={track === 'age'}
                     active={period.id === focusPeriodId}
@@ -310,7 +421,8 @@ export function Timeline({ people, focusPeriodId, highlightPersonId, onSelectPer
                     person={person}
                     lane={lanes.get(person.id) ?? 0}
                     laneHeight={LANE_HEIGHT}
-                    barPixels={Math.max(person.span.to - person.span.from, 0.8) / unitsPerPixel}
+                    barPixels={Math.max(Math.min(person.span.to, windowMax) - person.span.from, 0.8) / unitsPerPixel}
+                    scale={scale}
                     highlighted={person.id === highlightPersonId}
                     dimmed={Boolean(highlightPersonId) && person.id !== highlightPersonId}
                     onSelect={(p) => openPerson(p.id)}
@@ -319,7 +431,7 @@ export function Timeline({ people, focusPeriodId, highlightPersonId, onSelectPer
               </div>
             </section>
           ))}
-          {people.length === 0 && (
+          {visiblePeople.length === 0 && (
             <p className="p-8 text-center text-sm text-ink-400">אין דמויות התואמות את הסינון הנוכחי.</p>
           )}
         </div>
@@ -344,23 +456,33 @@ function VerticalTimeline({
   people,
   focusPeriodId,
   corpus,
+  windowMax,
+  nextAge,
+  nextAgeCount,
+  onReveal,
+  onRevealAll,
   className,
 }: {
   people: Person[];
   focusPeriodId?: string | null;
   corpus: CorpusFilter;
+  windowMax: number;
+  nextAge?: Period;
+  nextAgeCount: number;
+  onReveal: () => void;
+  onRevealAll: () => void;
   className?: string;
 }) {
   const grouped = useMemo(() => {
     return filterByCorpus(dataset.periods, corpus)
-      .filter((period) => period.track === 'era')
+      .filter((period) => period.track === 'era' && period.from < windowMax)
       .map((period) => ({
         period,
         members: people
           .filter((p) => p.periodIds.includes(period.id) || (p.span.from <= period.to && period.from <= p.span.to))
           .sort(byTimeline),
       }));
-  }, [people, corpus]);
+  }, [people, corpus, windowMax]);
 
   return (
     <div className={cn('space-y-6', className)}>
@@ -391,6 +513,19 @@ function VerticalTimeline({
         ))}
       {people.length === 0 && (
         <p className="card p-8 text-center text-sm text-ink-400">אין דמויות התואמות את הסינון הנוכחי.</p>
+      )}
+
+      {nextAge && (
+        <div className="card space-y-2 p-4 text-center">
+          <p className="text-sm text-ink-600">עד כאן התקופה הזו. אפשר להמשיך הלאה בציר.</p>
+          <button type="button" onClick={onReveal} className="btn-primary w-full">
+            לפתוח את התקופה הבאה: {nextAge.name}
+            <span className="rounded-full bg-parchment-50/20 px-2 text-xs">+{nextAgeCount}</span>
+          </button>
+          <button type="button" onClick={onRevealAll} className="btn-ghost text-xs">
+            הצג את הכול
+          </button>
+        </div>
       )}
     </div>
   );

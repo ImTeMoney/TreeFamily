@@ -3,7 +3,7 @@ import type { Person } from '../types';
 import { dataset } from '../data/repository';
 import { certaintyLabels, roleEmoji, roleLabels, timelineGroupOf } from '../utils/labels';
 import { displayName } from '../utils/people';
-import { lengthToPercent, toPercent } from '../utils/axis';
+import type { AxisScale } from '../utils/axis';
 import { cn } from '../utils/cn';
 
 interface Props {
@@ -12,6 +12,8 @@ interface Props {
   laneHeight: number;
   /** רוחב הרצועה בפיקסלים בזום הנוכחי — קובע אם השם נכנס בתוכה */
   barPixels: number;
+  /** הסקאלה של החלון הנראה בציר */
+  scale: AxisScale;
   highlighted?: boolean;
   dimmed?: boolean;
   onSelect: (person: Person) => void;
@@ -40,9 +42,12 @@ function barStyle(color: string, certainty: Person['certainty']): React.CSSPrope
 }
 
 /** Bar של דמות על ציר הזמן, עם Tooltip בריחוף */
-export function TimelinePersonBar({ person, lane, laneHeight, barPixels, highlighted, dimmed, onSelect }: Props) {
+export function TimelinePersonBar({ person, lane, laneHeight, barPixels, scale, highlighted, dimmed, onSelect }: Props) {
   const [hovered, setHovered] = useState(false);
-  const width = lengthToPercent(Math.max(person.span.to - person.span.from, 0.8));
+  /** רצועה שנמשכת מעבר לחלון הנראה נחתכת בקצהו */
+  const visibleTo = Math.min(person.span.to, scale.max);
+  const continues = person.span.to > scale.max + 0.01;
+  const width = scale.lengthToPercent(Math.max(visibleTo - person.span.from, 0.8));
   /**
    * כשהרצועה צרה מכדי להכיל את השם, השם יוצא אל מחוץ לרצועה במקום להיחתך.
    * כך רוחב הרצועה נשאר נאמן לטווח האמיתי, והכיתוב תמיד קריא במלואו.
@@ -56,7 +61,7 @@ export function TimelinePersonBar({ person, lane, laneHeight, barPixels, highlig
   return (
     <div
       className="absolute"
-      style={{ right: `${toPercent(person.span.from)}%`, width: `${width}%`, top: lane * laneHeight }}
+      style={{ right: `${scale.toPercent(person.span.from)}%`, width: `${width}%`, top: lane * laneHeight }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
@@ -77,6 +82,11 @@ export function TimelinePersonBar({ person, lane, laneHeight, barPixels, highlig
           {roleEmoji[person.roles[0] ?? 'other']}
         </span>
         {labelInside && <span className="whitespace-nowrap">{person.name}</span>}
+        {continues && (
+          <span aria-hidden className="shrink-0 opacity-70">
+            ›
+          </span>
+        )}
 
         {/* השם נכתב במלואו לצד הרצועה כשאין בה מקום */}
         {!labelInside && (
