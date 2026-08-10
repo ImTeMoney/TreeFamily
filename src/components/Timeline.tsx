@@ -5,6 +5,7 @@ import { dataset } from '../data/repository';
 import { useAppState } from '../hooks/useAppState';
 import { useIsCompact } from '../hooks/useMediaQuery';
 import { byTimeline, filterByCorpus, type CorpusFilter } from '../utils/people';
+import { timelineGroupOf, timelineGroups } from '../utils/labels';
 import { AXIS_MAX, AXIS_MIN, toPercent } from '../utils/axis';
 import { cn } from '../utils/cn';
 import { TimelinePeriodBand } from './TimelinePeriod';
@@ -76,6 +77,7 @@ function assignBandLabels(periods: Period[], unitsPerPixel: number): Map<string,
 }
 
 const trackLabels: Record<PeriodTrack, string> = {
+  age: 'עידן',
   era: 'תקופה היסטורית',
   chain: 'שלב במסירת התורה',
 };
@@ -104,18 +106,35 @@ export function Timeline({ people, focusPeriodId, highlightPersonId, onSelectPer
 
   /** כמה יחידות ציר שוות לפיקסל אחד בזום הנוכחי */
   const unitsPerPixel = (AXIS_MAX - AXIS_MIN) / Math.max(viewWidth * zoom, 1);
-  const lanes = useMemo(() => assignLanes(people, unitsPerPixel), [people, unitsPerPixel]);
+
+  /**
+   * הדמויות מחולקות לשורות לפי קטגוריה, וכל קטגוריה מסודרת במסלולים בנפרד.
+   * כך הציר נראה כטבלה מסודרת ולא כערבוב של מאות רצועות.
+   */
+  const groupedPeople = useMemo(() => {
+    const byGroup = new Map<string, Person[]>();
+    for (const person of people) {
+      const group = timelineGroupOf(person.roles);
+      byGroup.set(group.id, [...(byGroup.get(group.id) ?? []), person]);
+    }
+    return timelineGroups
+      .map((group) => {
+        const members = byGroup.get(group.id) ?? [];
+        const lanes = assignLanes(members, unitsPerPixel);
+        return { group, members, lanes, laneCount: Math.max(...[...lanes.values()], 0) + 1 };
+      })
+      .filter(({ members }) => members.length > 0);
+  }, [people, unitsPerPixel]);
 
   /** הרצועות מסוננות לפי הקורפוס הפעיל, ומחולקות לשני מסלולים */
   const trackRows = useMemo(
     () =>
-      (['era', 'chain'] as PeriodTrack[]).map((track) => {
+      (['age', 'era', 'chain'] as PeriodTrack[]).map((track) => {
         const periods = filterByCorpus(dataset.periods, corpus).filter((period) => period.track === track);
         return { track, periods, labelSlots: assignBandLabels(periods, unitsPerPixel) };
       }),
     [corpus, unitsPerPixel],
   );
-  const laneCount = useMemo(() => Math.max(...[...lanes.values()], 0) + 1, [lanes]);
 
   /** ממרכז את התצוגה על ערך מסוים בציר (ולא על אחוז) */
   const scrollToAxis = (value: number) => {
@@ -240,7 +259,12 @@ export function Timeline({ people, focusPeriodId, highlightPersonId, onSelectPer
             periods.length === 0 ? null : (
               <div
                 key={track}
-                className="relative h-12 border-b border-parchment-200 bg-parchment-50/60"
+                className={cn(
+                  'relative border-b',
+                  track === 'age'
+                    ? 'h-9 border-parchment-300 bg-white/70'
+                    : 'h-12 border-parchment-200 bg-parchment-50/60',
+                )}
                 title={trackLabels[track]}
               >
                 {periods.map((period) => (
@@ -248,7 +272,8 @@ export function Timeline({ people, focusPeriodId, highlightPersonId, onSelectPer
                     key={period.id}
                     period={period}
                     bandPixels={(period.to - period.from) / unitsPerPixel}
-                    labelSlot={labelSlots.get(period.id) ?? 0}
+                    labelSlot={track === 'age' ? 0 : (labelSlots.get(period.id) ?? 0)}
+                    emphasis={track === 'age'}
                     active={period.id === focusPeriodId}
                     onSelect={onSelectPeriod}
                   />
@@ -257,27 +282,46 @@ export function Timeline({ people, focusPeriodId, highlightPersonId, onSelectPer
             ),
           )}
 
-          {/* הדמויות */}
-          <div
-            className="relative bg-[linear-gradient(90deg,rgba(207,185,143,.18)_1px,transparent_1px)] bg-[length:5%_100%] px-0 py-3"
-            style={{ height: laneCount * LANE_HEIGHT + 24 }}
-          >
-            {people.map((person) => (
-              <TimelinePersonBar
-                key={person.id}
-                person={person}
-                lane={lanes.get(person.id) ?? 0}
-                laneHeight={LANE_HEIGHT}
-                barPixels={Math.max(person.span.to - person.span.from, 0.8) / unitsPerPixel}
-                highlighted={person.id === highlightPersonId}
-                dimmed={Boolean(highlightPersonId) && person.id !== highlightPersonId}
-                onSelect={(p) => openPerson(p.id)}
-              />
-            ))}
-            {people.length === 0 && (
-              <p className="p-8 text-center text-sm text-ink-400">אין דמויות התואמות את הסינון הנוכחי.</p>
-            )}
-          </div>
+          {/* הדמויות, מסודרות בשורות לפי קטגוריה */}
+          {groupedPeople.map(({ group, members, lanes, laneCount }, index) => (
+            <section
+              key={group.id}
+              className={cn(
+                'border-b border-parchment-200/70',
+                index % 2 === 1 ? 'bg-parchment-100/40' : 'bg-transparent',
+              )}
+            >
+              {/* כותרת השורה — נשארת צמודה לקצה גם בזמן גלילה לצדדים */}
+              <div className="h-6">
+                <span
+                  className="sticky right-0 float-right flex items-center gap-1.5 rounded-bl-lg bg-parchment-50/95 px-2.5 py-0.5 text-[11px] font-bold shadow-sm backdrop-blur-sm"
+                  style={{ color: group.color }}
+                >
+                  <span className="h-2 w-2 rounded-full" style={{ backgroundColor: group.color }} aria-hidden />
+                  {group.label}
+                  <span className="font-normal text-ink-400">{members.length}</span>
+                </span>
+              </div>
+
+              <div className="relative" style={{ height: laneCount * LANE_HEIGHT + 8 }}>
+                {members.map((person) => (
+                  <TimelinePersonBar
+                    key={person.id}
+                    person={person}
+                    lane={lanes.get(person.id) ?? 0}
+                    laneHeight={LANE_HEIGHT}
+                    barPixels={Math.max(person.span.to - person.span.from, 0.8) / unitsPerPixel}
+                    highlighted={person.id === highlightPersonId}
+                    dimmed={Boolean(highlightPersonId) && person.id !== highlightPersonId}
+                    onSelect={(p) => openPerson(p.id)}
+                  />
+                ))}
+              </div>
+            </section>
+          ))}
+          {people.length === 0 && (
+            <p className="p-8 text-center text-sm text-ink-400">אין דמויות התואמות את הסינון הנוכחי.</p>
+          )}
         </div>
       </div>
 

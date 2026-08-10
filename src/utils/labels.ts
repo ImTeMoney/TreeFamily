@@ -129,3 +129,27 @@ export const roleGroups = [
 ] as const;
 
 export type RoleGroupId = (typeof roleGroups)[number]['id'];
+
+/**
+ * חלוקה לרצועות אופקיות בציר הזמן.
+ * בניגוד ל-roleGroups, כאן כל דמות שייכת לקבוצה אחת בלבד — הראשונה שהיא תואמת —
+ * כדי שהציר יהיה מסודר בשורות ולא ערבוב אקראי.
+ */
+export const timelineGroups = [
+  { id: 'rulers', label: 'מלכים ומנהיגים', color: '#274067', roles: ['king', 'queen', 'nasi', 'judge', 'patriarch', 'matriarch'] },
+  { id: 'prophets', label: 'נביאים', color: '#7a4f7d', roles: ['prophet', 'prophetess'] },
+  { id: 'sages', label: 'חכמים', color: '#2f7d78', roles: ['sage', 'tanna', 'amora', 'zug', 'scribe'] },
+  { id: 'priests', label: 'כהנים ולויים', color: '#a37f36', roles: ['priest', 'levite'] },
+  { id: 'warriors', label: 'לוחמים ושרים', color: '#8f3a3a', roles: ['warrior', 'officer'] },
+  { id: 'others', label: 'משפחה ואחרים', color: '#6b7a8f', roles: [] as RoleTag[] },
+] as const satisfies ReadonlyArray<{ id: string; label: string; color: string; roles: readonly RoleTag[] }>;
+
+export type TimelineGroupId = (typeof timelineGroups)[number]['id'];
+
+/** הקבוצה שאליה הדמות משויכת בציר — הראשונה שתפקיד שלה תואם */
+export function timelineGroupOf(roles: RoleTag[]): (typeof timelineGroups)[number] {
+  return (
+    timelineGroups.find((group) => group.roles.length > 0 && roles.some((r) => (group.roles as readonly RoleTag[]).includes(r))) ??
+    timelineGroups[timelineGroups.length - 1]
+  );
+}

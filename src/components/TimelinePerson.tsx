@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { Person } from '../types';
 import { dataset } from '../data/repository';
-import { certaintyLabels, roleEmoji, roleLabels } from '../utils/labels';
+import { certaintyLabels, roleEmoji, roleLabels, timelineGroupOf } from '../utils/labels';
 import { displayName } from '../utils/people';
 import { lengthToPercent, toPercent } from '../utils/axis';
 import { cn } from '../utils/cn';
@@ -22,11 +22,22 @@ export function labelPixels(name: string): number {
   return name.length * 7 + 30;
 }
 
-const certaintyBarStyles: Record<Person['certainty'], string> = {
-  certain: 'bg-ink-800 text-parchment-50',
-  estimated: 'bg-gold-500/85 text-ink-900 [background-image:repeating-linear-gradient(45deg,transparent,transparent_5px,rgba(255,255,255,.28)_5px,rgba(255,255,255,.28)_10px)]',
-  unknown: 'bg-rose-300/80 text-ink-900 border border-dashed border-rose-500',
-};
+/**
+ * הצבע מציין את קבוצת התפקידים (וכך תואם את שורת הרצועה),
+ * והמילוי מציין את מידת הוודאות: מלא = ודאי, פסים = משוער, מקווקו = לא ידוע.
+ */
+function barStyle(color: string, certainty: Person['certainty']): React.CSSProperties {
+  if (certainty === 'certain') return { backgroundColor: color, color: '#fdfbf7' };
+  if (certainty === 'estimated') {
+    return {
+      backgroundColor: `${color}26`,
+      backgroundImage: `repeating-linear-gradient(45deg, ${color}59 0 5px, transparent 5px 10px)`,
+      border: `1px solid ${color}80`,
+      color: '#1b2d4f',
+    };
+  }
+  return { backgroundColor: '#ffffffcc', border: `1px dashed ${color}`, color: '#1b2d4f' };
+}
 
 /** Bar של דמות על ציר הזמן, עם Tooltip בריחוף */
 export function TimelinePersonBar({ person, lane, laneHeight, barPixels, highlighted, dimmed, onSelect }: Props) {
@@ -37,6 +48,7 @@ export function TimelinePersonBar({ person, lane, laneHeight, barPixels, highlig
    * כך רוחב הרצועה נשאר נאמן לטווח האמיתי, והכיתוב תמיד קריא במלואו.
    */
   const labelInside = barPixels >= labelPixels(person.name);
+  const group = timelineGroupOf(person.roles);
   const period = person.periodIds[0] ? dataset.periodById.get(person.periodIds[0]) : undefined;
   const family = person.relations.find((r) => r.kind === 'father' || r.kind === 'mother');
   const familyPerson = family ? dataset.peopleById.get(family.personId) : undefined;
@@ -52,13 +64,13 @@ export function TimelinePersonBar({ person, lane, laneHeight, barPixels, highlig
         type="button"
         onClick={() => onSelect(person)}
         title={`${displayName(person)} — ${period?.name ?? ''}`}
+        style={barStyle(group.color, person.certainty)}
         className={cn(
-          'flex h-6 w-full items-center gap-1 rounded-full px-1.5 text-[11px] font-medium shadow-sm transition-all duration-200',
-          certaintyBarStyles[person.certainty],
+          'flex h-6 w-full items-center gap-1 rounded-full px-1.5 text-[11px] font-medium transition-all duration-200',
           'hover:shadow-pop focus:outline-none focus-visible:ring-2 focus-visible:ring-gold-500',
           labelInside ? 'overflow-hidden px-2' : 'justify-center',
           highlighted && 'ring-2 ring-gold-500 ring-offset-1',
-          dimmed && 'opacity-50 saturate-50',
+          dimmed && 'opacity-40',
         )}
       >
         <span aria-hidden className="shrink-0 text-[10px]">

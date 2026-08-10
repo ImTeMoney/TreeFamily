@@ -8,6 +8,8 @@ interface Props {
   bandPixels: number;
   /** שורת הכיתוב: 0 עליונה, 1 תחתונה, (-1) אין מקום — השם יוצג בריחוף בלבד */
   labelSlot: number;
+  /** רצועת עידן — בולטת יותר, כשורת ההתמצאות העליונה */
+  emphasis?: boolean;
   active?: boolean;
   onSelect?: (period: Period) => void;
 }
@@ -18,7 +20,7 @@ function periodLabelPixels(name: string): number {
 }
 
 /** רצועת תקופה ברקע ציר הזמן */
-export function TimelinePeriodBand({ period, bandPixels, labelSlot, active, onSelect }: Props) {
+export function TimelinePeriodBand({ period, bandPixels, labelSlot, emphasis, active, onSelect }: Props) {
   /** כשהרצועה צרה מדי, השם נכתב במלואו וגולש החוצה במקום להיחתך */
   const labelInside = bandPixels >= periodLabelPixels(period.name);
   const hiddenLabel = labelSlot < 0;
@@ -28,7 +30,12 @@ export function TimelinePeriodBand({ period, bandPixels, labelSlot, active, onSe
       type="button"
       onClick={() => onSelect?.(period)}
       title={period.name}
-      style={{ right: `${toPercent(period.from)}%`, width: `${lengthToPercent(period.to - period.from)}%` }}
+      style={{
+        right: `${toPercent(period.from)}%`,
+        width: `${lengthToPercent(period.to - period.from)}%`,
+        backgroundColor: emphasis && !active ? `${period.color}1f` : undefined,
+        borderInlineEndColor: emphasis ? `${period.color}66` : undefined,
+      }}
       className={cn(
         'group absolute top-0 h-full border-r border-parchment-200/80 transition-colors',
         labelInside && 'overflow-hidden',
@@ -37,7 +44,8 @@ export function TimelinePeriodBand({ period, bandPixels, labelSlot, active, onSe
     >
       <span
         className={cn(
-          'absolute whitespace-nowrap rounded-full px-2 py-0.5 text-[11px] font-semibold transition-all',
+          'absolute whitespace-nowrap rounded-full px-2 py-0.5 transition-all',
+          emphasis ? 'text-xs font-bold' : 'text-[11px] font-semibold',
           labelSlot === 1 ? 'bottom-1.5' : 'top-1.5',
           labelInside ? 'right-2' : 'right-1 z-10 group-hover:z-30',
           hiddenLabel && 'z-30 opacity-0 group-hover:opacity-100',

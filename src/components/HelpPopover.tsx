@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { HelpCircle, X } from 'lucide-react';
 import { CertaintyBadge } from './CertaintyBadge';
+import { timelineGroups } from '../utils/labels';
 import { cn } from '../utils/cn';
 
 interface Props {
@@ -55,19 +56,34 @@ export function HelpPopover({ onOpenTour, className }: Props) {
               <dd>אורך הרצועה מייצג את התקופה שבה חי. חפיפה בין שתי רצועות = שני אנשים שחיו יחד.</dd>
             </div>
             <div>
-              <dt className="font-semibold text-ink-800">שתי שורות התקופות למעלה</dt>
+              <dt className="mb-1.5 font-semibold text-ink-800">שלוש שורות התקופות למעלה</dt>
               <dd>
-                העליונה — התקופה ההיסטורית (מי שלט ומה קרה). התחתונה — השלב במסירת התורה (מי מסר למי).
-                לכן הלל מופיע גם תחת "ימי הורדוס" וגם תחת "הזוגות".
+                העליונה — העידן (בית ראשון, בית שני). האמצעית — התקופה ההיסטורית המדויקת. התחתונה —
+                השלב במסירת התורה. לכן הלל מופיע גם תחת "בית שני", גם תחת "ימי הורדוס" וגם תחת "הזוגות".
               </dd>
             </div>
             <div>
-              <dt className="mb-1.5 font-semibold text-ink-800">צבע הרצועה = מידת הוודאות</dt>
+              <dt className="mb-1.5 font-semibold text-ink-800">צבע הרצועה = הקטגוריה</dt>
+              <dd className="flex flex-wrap gap-1.5">
+                {timelineGroups.map((group) => (
+                  <span
+                    key={group.id}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-parchment-200 bg-white px-2 py-0.5 text-xs"
+                  >
+                    <span className="h-2 w-2 rounded-full" style={{ backgroundColor: group.color }} aria-hidden />
+                    {group.label}
+                  </span>
+                ))}
+              </dd>
+            </div>
+            <div>
+              <dt className="mb-1.5 font-semibold text-ink-800">מילוי הרצועה = מידת הוודאות</dt>
               <dd className="flex flex-wrap gap-1.5">
                 <CertaintyBadge certainty="certain" />
                 <CertaintyBadge certainty="estimated" />
                 <CertaintyBadge certainty="unknown" />
               </dd>
+              <dd className="mt-1 text-xs">מלא = ודאי · פסים = משוער · מקווקו = לא ניתן לקבוע.</dd>
             </div>
             <div>
               <dt className="font-semibold text-ink-800">אין כאן תאריכים</dt>
