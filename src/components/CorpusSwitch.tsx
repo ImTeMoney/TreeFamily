@@ -20,12 +20,16 @@ export function CorpusSwitch({ className }: { className?: string }) {
   return (
     <div
       role="group"
-      aria-label="בחירת קורפוס"
+      aria-label="בחירת מקור"
       className={cn(
         'no-scrollbar flex max-w-full items-center gap-0.5 overflow-x-auto rounded-full border border-parchment-300 bg-white/70 p-0.5',
         className,
       )}
     >
+      {/* התווית מבהירה שהבחירה היא בספרות שבה הדמות מתועדת, ולא בתקופה שבה חיה */}
+      <span aria-hidden className="shrink-0 pr-2.5 pl-1 text-[11px] font-semibold text-ink-400">
+        מקור:
+      </span>
       {options.map((option) => (
         <button
           key={option.id}

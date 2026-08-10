@@ -6,6 +6,7 @@ import { applyFilters, emptyFilters, FilterBar, type TimelineFilters } from '../
 import { HelpPopover } from '../components/HelpPopover';
 import { useAppState } from '../hooks/useAppState';
 import { filterByCorpus } from '../utils/people';
+import { trackOrder, trackTitles } from '../utils/labels';
 
 export function TimelinePage() {
   const { corpus, openTour } = useAppState();
@@ -74,25 +75,37 @@ export function TimelinePage() {
       />
 
       <section className="card p-4">
-        <h2 className="mb-2 font-display text-lg font-bold text-ink-900">מעבר מהיר לתקופה</h2>
-        <div className="flex flex-wrap gap-1.5">
-          {filterByCorpus(dataset.periods, corpus).map((period) => (
-            <button
-              key={period.id}
-              type="button"
-              onClick={() => {
-                setParams((prev) => {
-                  const next = new URLSearchParams(prev);
-                  next.set('period', period.id);
-                  next.delete('person');
-                  return next;
-                });
-              }}
-              className={`chip ${focusPeriodId === period.id ? 'chip-active' : ''}`}
-            >
-              {period.name}
-            </button>
-          ))}
+        <h2 className="mb-3 font-display text-lg font-bold text-ink-900">מעבר מהיר לתקופה</h2>
+        <div className="space-y-3">
+          {trackOrder.map((track) => {
+            const periods = filterByCorpus(dataset.periods, corpus).filter((period) => period.track === track);
+            if (periods.length === 0) return null;
+
+            return (
+              <div key={track}>
+                <h3 className="mb-1.5 text-xs font-semibold text-ink-400">{trackTitles[track]}</h3>
+                <div className="flex flex-wrap gap-1.5">
+                  {periods.map((period) => (
+                    <button
+                      key={period.id}
+                      type="button"
+                      onClick={() => {
+                        setParams((prev) => {
+                          const next = new URLSearchParams(prev);
+                          next.set('period', period.id);
+                          next.delete('person');
+                          return next;
+                        });
+                      }}
+                      className={`chip ${focusPeriodId === period.id ? 'chip-active' : ''}`}
+                    >
+                      {period.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
         </div>
         {focusPeriodId && (
           <button

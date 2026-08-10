@@ -4,7 +4,7 @@ import { dataset } from '../data/repository';
 import { peopleInPeriod } from '../utils/people';
 import { PersonCard } from '../components/PersonCard';
 import { CertaintyBadge } from '../components/CertaintyBadge';
-import { roleGroups } from '../utils/labels';
+import { roleGroups, trackDescriptions, trackLabels, trackOrder, trackTitles } from '../utils/labels';
 import { matchesRoleGroup } from '../utils/people';
 import { SourceList } from '../components/SourceList';
 import { filterByCorpus } from '../utils/people';
@@ -15,35 +15,55 @@ export function PeriodsPage() {
   const { corpus } = useAppState();
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-8">
       <header>
         <h1 className="section-title">תקופות</h1>
         <p className="text-sm text-ink-600">
-          מהדורות הראשונים ועד עזרא ונחמיה, ומשם דרך הזוגות והתנאים ועד חתימת המשנה.
+          מהדורות הראשונים ועד חתימת התלמוד, בשלוש רמות: העידנים הגדולים, התקופות ההיסטוריות
+          שבתוכם, ושלבי מסירת התורה שרצים במקביל.
         </p>
       </header>
 
-      <ol className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        {filterByCorpus(dataset.periods, corpus).map((period) => {
-          const count = peopleInPeriod(period.id).length;
-          return (
-            <li key={period.id}>
-              <Link
-                to={`/periods/${period.id}`}
-                className="card group flex h-full flex-col gap-2 p-5 transition-all hover:-translate-y-0.5 hover:border-gold-500 hover:shadow-pop"
-              >
-                <span className="flex items-center gap-2">
-                  <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: period.color }} aria-hidden />
-                  <span className="text-xs font-semibold text-ink-400">תקופה {period.order}</span>
-                </span>
-                <h2 className="font-display text-xl font-bold text-ink-900 group-hover:text-ink-700">{period.name}</h2>
-                <p className="flex-1 text-sm leading-relaxed text-ink-600">{period.description}</p>
-                <span className="text-xs text-ink-400">{count} דמויות</span>
-              </Link>
-            </li>
-          );
-        })}
-      </ol>
+      {trackOrder.map((track) => {
+        const periods = filterByCorpus(dataset.periods, corpus).filter((period) => period.track === track);
+        if (periods.length === 0) return null;
+
+        return (
+          <section key={track} className="space-y-3">
+            <div>
+              <h2 className="font-display text-xl font-bold text-ink-900">{trackTitles[track]}</h2>
+              <p className="text-sm text-ink-600">{trackDescriptions[track]}</p>
+            </div>
+            <ol className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              {periods.map((period) => {
+                const count = peopleInPeriod(period.id).length;
+                return (
+                  <li key={period.id}>
+                    <Link
+                      to={`/periods/${period.id}`}
+                      className="card group flex h-full flex-col gap-2 p-5 transition-all hover:-translate-y-0.5 hover:border-gold-500 hover:shadow-pop"
+                    >
+                      <span className="flex items-center gap-2">
+                        <span
+                          className="h-2.5 w-2.5 rounded-full"
+                          style={{ backgroundColor: period.color }}
+                          aria-hidden
+                        />
+                        <span className="text-xs font-semibold text-ink-400">{trackLabels[period.track]}</span>
+                      </span>
+                      <h3 className="font-display text-xl font-bold text-ink-900 group-hover:text-ink-700">
+                        {period.name}
+                      </h3>
+                      <p className="flex-1 text-sm leading-relaxed text-ink-600">{period.description}</p>
+                      <span className="text-xs text-ink-400">{count} דמויות</span>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ol>
+          </section>
+        );
+      })}
     </div>
   );
 }

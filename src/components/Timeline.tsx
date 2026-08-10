@@ -1,11 +1,11 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { ChevronsLeft, Crosshair, Maximize2, Minus, Plus, RotateCcw } from 'lucide-react';
-import type { Period, PeriodTrack, Person } from '../types';
+import type { Period, Person } from '../types';
 import { dataset } from '../data/repository';
 import { useAppState } from '../hooks/useAppState';
 import { useIsCompact } from '../hooks/useMediaQuery';
 import { byTimeline, filterByCorpus, type CorpusFilter } from '../utils/people';
-import { timelineGroupOf, timelineGroups } from '../utils/labels';
+import { timelineGroupOf, timelineGroups, trackLabels, trackOrder } from '../utils/labels';
 import { AXIS_MAX, AXIS_MIN, createAxisScale } from '../utils/axis';
 import type { AxisScale } from '../utils/axis';
 import { cn } from '../utils/cn';
@@ -81,12 +81,6 @@ function assignBandLabels(periods: Period[], unitsPerPixel: number, scale: AxisS
   }
   return result;
 }
-
-const trackLabels: Record<PeriodTrack, string> = {
-  age: 'עידן',
-  era: 'תקופה היסטורית',
-  chain: 'שלב במסירת התורה',
-};
 
 export function Timeline({
   people,
@@ -184,7 +178,7 @@ export function Timeline({
   /** הרצועות מסוננות לפי הקורפוס הפעיל, ומחולקות לשני מסלולים */
   const trackRows = useMemo(
     () =>
-      (['age', 'era', 'chain'] as PeriodTrack[]).map((track) => {
+      trackOrder.map((track) => {
         const periods = filterByCorpus(dataset.periods, corpus).filter(
           (period) => period.track === track && period.from < windowMax,
         );

@@ -1,15 +1,20 @@
-import type { Certainty, Corpus, Gender, Relation, RoleTag } from '../types';
+import type { Certainty, Corpus, Gender, PeriodTrack, Relation, RoleTag } from '../types';
 
+/**
+ * הקורפוס הוא *היכן הדמות מתועדת*, ולא מתי חיה — ולכן כל התוויות כאן הן שמות של
+ * ספרות ולא שמות של תקופות. את התקופות (בית ראשון, בית שני) מוצאים ברצועות הציר
+ * ובמסך התקופות, תחת "עידנים".
+ */
 export const corpusLabels: Record<Corpus, string> = {
   tanach: 'תנ״ך',
-  'bayit-sheni': 'בית שני',
+  'bayit-sheni': 'ספרים חיצוניים',
   mishna: 'משנה',
   talmud: 'תלמוד',
 };
 
 export const corpusDescriptions: Record<Corpus, string> = {
   tanach: 'מאדם הראשון ועד עזרא ונחמיה',
-  'bayit-sheni': 'מימי פרס ויוון, דרך החשמונאים ועד הורדוס והחורבן',
+  'bayit-sheni': 'מקבים א׳ וב׳ ומגילת תענית — מקורות בני ימי בית שני שאינם תנ״ך ואינם ספרות חז״ל',
   mishna: 'מאנשי כנסת הגדולה ועד חתימת המשנה',
   talmud: 'מרב ושמואל ועד רב אשי ורבינא וחתימת התלמוד',
 };
@@ -90,6 +95,29 @@ export const certaintyExplain: Record<Certainty, string> = {
   estimated: 'התקופה משוערת על פי ההקשר ורצף הדורות',
   unknown: 'לא ניתן לקבוע את התקופה מן הכתוב',
 };
+
+/** שלושת מסלולי התקופות — הכותרות שמופיעות בציר, במסך התקופות ובמעבר המהיר */
+export const trackLabels: Record<PeriodTrack, string> = {
+  age: 'עידן',
+  era: 'תקופה היסטורית',
+  chain: 'שלב במסירת התורה',
+};
+
+/** צורת הרבים, לכותרות של קבוצות */
+export const trackTitles: Record<PeriodTrack, string> = {
+  age: 'עידנים',
+  era: 'תקופות היסטוריות',
+  chain: 'שלבי מסירת התורה',
+};
+
+export const trackDescriptions: Record<PeriodTrack, string> = {
+  age: 'החלוקה הגדולה לצורך התמצאות — ימי בית ראשון, ימי בית שני וכיוצא בהם.',
+  era: 'מי שלט ומה קרה — התקופה ההיסטורית המדויקת שבתוך העידן.',
+  chain: 'מי מסר את התורה למי — מאנשי כנסת הגדולה ועד חתימת התלמוד.',
+};
+
+/** סדר הצגת המסלולים */
+export const trackOrder: PeriodTrack[] = ['age', 'era', 'chain'];
 
 export const genderLabels: Record<Gender, string> = {
   male: 'זכר',
