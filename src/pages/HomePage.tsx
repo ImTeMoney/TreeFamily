@@ -32,7 +32,7 @@ export function HomePage() {
               {scopedPeople.length} דמויות · {scopedPeriods.length} תקופות · {dataset.books.length} ספרים ומסכתות
             </span>
             <h1 className="mt-5 font-display text-4xl font-bold leading-tight text-ink-900 sm:text-6xl">
-              מפת המקורות
+              מפת התנ״ך
             </h1>
             <p className="mt-3 font-display text-xl text-gold-600 sm:text-2xl">מי חי בתקופה של מי?</p>
             <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-ink-600">

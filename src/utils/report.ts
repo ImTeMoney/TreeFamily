@@ -94,7 +94,7 @@ export async function submitReport(report: Report): Promise<ReportResult> {
     body: JSON.stringify({
       access_key: ACCESS_KEY,
       subject: buildSubject(report),
-      from_name: 'מפת המקורות',
+      from_name: 'מפת התנ״ך',
       replyto: report.replyTo || undefined,
       message: buildBody(report),
       // שדות מפורטים, לנוחות הקריאה בתיבת הדואר

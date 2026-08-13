@@ -48,7 +48,7 @@ export function AppLayout() {
             </span>
             <span className="min-w-0 leading-tight">
               <span className="block truncate font-display text-base font-bold text-ink-900 lg:text-lg">
-                מפת המקורות
+                מפת התנ״ך
               </span>
               <span className="block truncate text-[11px] text-ink-400">מי חי בתקופה של מי?</span>
             </span>

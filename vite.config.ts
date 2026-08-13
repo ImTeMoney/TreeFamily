@@ -9,8 +9,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
       manifest: {
-        name: 'מפת המקורות — מי חי בתקופה של מי?',
-        short_name: 'מפת המקורות',
+        name: 'מפת התנ״ך — מי חי בתקופה של מי?',
+        short_name: 'מפת התנ״ך',
         description:
           'ציר זמן אינטראקטיבי של דמויות, משפחות, תקופות ואירועים — מן התנ״ך, דרך ימי בית שני והמשנה ועד התלמוד.',
         lang: 'he',
@@ -23,8 +23,8 @@ export default defineConfig({
         theme_color: '#12203a',
         categories: ['education', 'books', 'reference'],
         icons: [
-          { src: '/pwa-192.png', sizes: '192x192', type: 'image/png' },
-          { src: '/pwa-512.png', sizes: '512x512', type: 'image/png' },
+          { src: '/pwa-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: '/pwa-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
           { src: '/pwa-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
         shortcuts: [
